@@ -1,123 +1,98 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Target, Sparkles, ShieldCheck } from 'lucide-react'
 import type { About } from '@/types'
 
-const highlights = [
-  'Zamonaviy o'quv dasturlari',
-  'Tajribali va malakali o'qituvchilar',
-  'Qulay va ilg'or o'quv muhiti',
-  'Individual yondashuv',
-  'Olimpiada va musobaqalarga tayyorlov',
-  'Kuchli alumni jamoasi',
-]
-
 export default function AboutSection({ about }: { about: About | null }) {
-  const photos = about
-    ? [about.photo1, about.photo2, about.photo3].filter(Boolean) as string[]
-    : []
+  if (!about) return null
+
+  const highlights = [
+    { icon: Target, text: "Xalqaro o'quv dasturlari", color: 'text-blue-600', bg: 'bg-blue-100' },
+    { icon: ShieldCheck, text: "Xavfsiz va zamonaviy o'quv muhiti", color: 'text-green-600', bg: 'bg-green-100' },
+    { icon: Sparkles, text: "Individual yondashuv", color: 'text-orange-600', bg: 'bg-orange-100' },
+  ]
 
   return (
-    <section className="section-padding" style={{ background: '#f8fafc' }}>
+    <section className="section-spacing bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Left: photos collage */}
-          <div className="relative">
-            {photos.length > 0 ? (
-              <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+          
+          {/* Visual Column */}
+          <div className="lg:col-span-5 relative order-2 lg:order-1">
+            <div className="relative z-10 rounded-[60px] overflow-hidden shadow-3xl shadow-blue-900/10 border-8 border-slate-50 min-h-[500px] bg-slate-100">
+              {about.photo1 ? (
                 <img
-                  src={photos[0]}
-                  alt="Elita School"
-                  className="w-full h-[420px] object-cover rounded-3xl shadow-2xl"
+                  src={about.photo1}
+                  alt="About Elita"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
-                {photos[1] && (
-                  <img
-                    src={photos[1]}
-                    alt="Elita School"
-                    className="absolute -bottom-8 -right-8 w-52 h-52 object-cover rounded-2xl shadow-2xl border-4 border-white"
-                  />
-                )}
-                {photos[2] && (
-                  <img
-                    src={photos[2]}
-                    alt="Elita School"
-                    className="absolute -top-6 -left-6 w-36 h-36 object-cover rounded-2xl shadow-xl border-4 border-white"
-                  />
-                )}
-                {/* Experience badge */}
-                <div
-                  className="absolute top-8 right-8 rounded-2xl p-4 text-white text-center shadow-xl"
-                  style={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24)' }}
-                >
-                  <div className="text-3xl font-black leading-none">15+</div>
-                  <div className="text-xs font-medium mt-1 opacity-80">Yil tajriba</div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">Rasm mavjud emas</span>
                 </div>
+              )}
+            </div>
+            
+            {/* Absolute Badges */}
+            <div className="absolute -top-10 -right-10 glass-panel p-8 rounded-[40px] shadow-2xl animate-float">
+               <div className="text-5xl font-black text-blue-600 mb-1">15+</div>
+               <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yillik mukammallik</div>
+            </div>
+
+            <div className="absolute -bottom-6 -left-6 bg-slate-900 p-6 rounded-[30px] border border-white/10 shadow-2xl flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white">
+                <CheckCircle2 size={24} />
               </div>
-            ) : (
-              /* Fallback illustration */
-              <div
-                className="w-full h-[420px] rounded-3xl flex items-center justify-center relative overflow-hidden"
-                style={{ background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)' }}
-              >
-                <div
-                  className="absolute inset-0 opacity-10"
-                  style={{
-                    backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
-                    backgroundSize: '30px 30px',
-                  }}
-                />
-                <div className="text-center text-white">
-                  <div className="text-8xl mb-4">🏫</div>
-                  <div className="font-bold text-xl">Elita School</div>
-                </div>
-                <div
-                  className="absolute top-4 right-4 rounded-2xl p-4 text-center shadow-xl"
-                  style={{ background: 'rgba(245,158,11,0.9)' }}
-                >
-                  <div className="text-3xl font-black text-white leading-none">15+</div>
-                  <div className="text-xs font-medium text-white/80 mt-1">Yil tajriba</div>
-                </div>
+              <div>
+                <div className="text-white font-black text-lg">Sifat kafolati</div>
+                <div className="text-blue-400 text-[10px] font-bold uppercase tracking-widest">Davlat litsenziyasi</div>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Right: content */}
-          <div>
-            <div className="section-badge mb-4">
-              <span>Biz haqimizda</span>
-            </div>
-            <h2 className="text-4xl font-black mb-5" style={{ color: '#0f172a' }}>
-              Sifatli ta'lim —{' '}
-              <span className="text-gradient">bizning missiyamiz</span>
+          {/* Content Column */}
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <div className="section-label">Biz haqimizda</div>
+            <h2 className="text-4xl sm:text-6xl font-black text-slate-950 mb-8 leading-[1.1] tracking-tighter">
+              Bilim va tajribaning <br />
+              <span className="text-blue-600">oltin markazi</span>
             </h2>
-            {about ? (
-              <div
-                className="prose prose-blue max-w-none mb-8 text-base leading-relaxed"
-                style={{ color: '#475569' }}
-                dangerouslySetInnerHTML={{ __html: about.content }}
-              />
-            ) : (
-              <p className="text-base leading-relaxed mb-8" style={{ color: '#475569' }}>
-                Elita School 2009-yildan beri O'zbekiston yoshlarining zamonaviy ta'lim olishiga xizmat qilib kelmoqda. Biz har bir o'quvchining individualligini hurmat qilgan holda ularga eng yaxshi bilimni berishga intilamiz.
-              </p>
-            )}
+            
+            <div 
+              className="text-lg text-slate-600 mb-10 leading-relaxed font-medium prose max-w-none"
+              dangerouslySetInnerHTML={{ __html: about.content }}
+            />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-              {highlights.map((item) => (
-                <div key={item} className="flex items-center gap-2.5">
-                  <CheckCircle2 size={18} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                  <span className="text-sm font-medium" style={{ color: '#334155' }}>{item}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+              {highlights.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-4 group">
+                  <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <item.icon size={20} />
+                  </div>
+                  <span className="text-slate-900 font-bold text-sm tracking-tight">{item.text}</span>
                 </div>
               ))}
             </div>
 
-            <Link
-              to="/about"
-              className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-white shadow-lg transition-all hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', boxShadow: '0 10px 30px rgba(59,130,246,0.3)' }}
-            >
-              Batafsil o'qish
-              <ArrowRight size={18} />
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Link
+                to="/about"
+                className="premium-button-primary px-8 py-4 text-base w-full sm:w-auto"
+              >
+                Batafsil ma'lumot
+                <ArrowRight size={18} />
+              </Link>
+              <div className="flex -space-x-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden ring-4 ring-slate-50">
+                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+                <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white tracking-tighter">
+                  1k+
+                </div>
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ishonchli ta'lim</span>
+            </div>
           </div>
         </div>
       </div>

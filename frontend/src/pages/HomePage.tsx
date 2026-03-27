@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { GraduationCap } from 'lucide-react'
 import { getHome, getAbout } from '@/api/school'
 import type { HomepageData, About } from '@/types'
 import HeroSection from '@/components/sections/HeroSection'
@@ -32,12 +33,22 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f172a' }}>
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-full border-4 border-t-blue-500 border-white/10 animate-spin"
-          />
-          <span className="text-sm font-medium" style={{ color: '#64748b' }}>Yuklanmoqda...</span>
+      <div className="min-h-screen flex items-center justify-center bg-ui-darker relative overflow-hidden">
+        {/* Animated Background orbs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full animate-pulse" />
+        
+        <div className="relative flex flex-col items-center gap-10">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-[32px] border-4 border-blue-500/10 border-t-blue-500 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <GraduationCap size={32} className="text-blue-500 animate-pulse" />
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-center gap-2">
+            <div className="font-black text-white text-3xl tracking-tighter">ELITA<span className="text-blue-500">.</span></div>
+            <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] animate-pulse">Yuklanmoqda</div>
+          </div>
         </div>
       </div>
     )

@@ -1,28 +1,27 @@
 import { useEffect, useState } from 'react'
 import { getGallery } from '@/api/content'
 import type { GalleryCategory } from '@/types'
-import { X, ZoomIn, Images } from 'lucide-react'
+import { X, ZoomIn } from 'lucide-react'
 
 function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.93)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-3xl animate-fade-in"
       onClick={onClose}
     >
       <button
-        className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white"
-        style={{ background: 'rgba(255,255,255,0.1)' }}
+        className="absolute top-8 right-8 w-14 h-14 rounded-full flex items-center justify-center text-white bg-white/10 hover:bg-white/20 transition-all border border-white/10 active:scale-95 z-[110]"
         onClick={onClose}
       >
-        <X size={20} />
+        <X size={24} />
       </button>
-      <img
-        src={src}
-        alt="Gallery"
-        className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <div className="relative max-w-7xl w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+         <img
+          src={src}
+          alt="Gallery"
+          className="max-w-full max-h-[85vh] object-contain rounded-[40px] shadow-[0_0_100px_rgba(37,99,235,0.25)] animate-reveal border-8 border-white/5"
+        />
+      </div>
     </div>
   )
 }
@@ -46,23 +45,29 @@ export default function GalleryPage() {
     : gallery.flatMap((cat) => cat.images.map((img) => ({ ...img, categoryName: cat.name })))
 
   return (
-    <div>
-      <div className="pt-32 pb-12 text-white" style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a8a)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h1 className="text-5xl font-black mb-4 flex items-center gap-3">
-            <Images size={40} />
-            Galereya
+    <div className="bg-white min-h-screen">
+      {/* Hero */}
+      <section className="relative pt-40 pb-20 bg-ui-darker overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 blur-[150px] rounded-full" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+          <div className="section-label bg-white/5 text-blue-400 border-white/10 mx-auto mb-8">Galereya</div>
+          <h1 className="text-5xl sm:text-7xl font-black text-white leading-[1.1] tracking-tighter mb-8">
+            Maktab <span className="text-gradient">hayoti</span> kadrlarda
           </h1>
-          <p className="text-lg max-w-xl" style={{ color: '#93c5fd' }}>
-            Maktabimiz hayotidan rasmlar va lahzalar
+          <p className="text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-12">
+            Bizning har bir kunimiz quvonchli lahzalar, yangi bilimlar va unutilmas tadbirlarga boy.
           </p>
-          {/* Category filter */}
+
+          {/* Premium Filter */}
           {gallery.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-8">
+            <div className="inline-flex flex-wrap justify-center gap-3 p-2 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-xl">
               <button
                 onClick={() => setActiveCategory(null)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{ background: !activeCategory ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: 'white' }}
+                className={`px-8 py-4 rounded-[24px] text-sm font-black uppercase tracking-widest transition-all duration-300 ${
+                  activeCategory === null 
+                  ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20' 
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
               >
                 Barchasi
               </button>
@@ -70,11 +75,11 @@ export default function GalleryPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: activeCategory === cat.id ? '#3b82f6' : 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                  }}
+                  className={`px-8 py-4 rounded-[24px] text-sm font-black uppercase tracking-widest transition-all duration-300 ${
+                    activeCategory === cat.id 
+                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
                 >
                   {cat.name}
                 </button>
@@ -82,41 +87,45 @@ export default function GalleryPage() {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
-      <section className="section-padding" style={{ background: '#0f172a' }}>
+      <section className="section-spacing">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {loading ? (
-            <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="skeleton break-inside-avoid rounded-xl" style={{ height: i % 3 === 0 ? '280px' : '200px', background: '#1e293b' }} />
-              ))}
-            </div>
+             <div className="columns-1 sm:columns-2 lg:columns-4 gap-8 space-y-8">
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="rounded-[40px] bg-slate-50 animate-pulse" style={{ height: i % 3 === 0 ? '400px' : '300px' }} />
+                ))}
+             </div>
           ) : allImages.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">🖼️</div>
-              <p className="text-lg font-semibold" style={{ color: '#64748b' }}>Rasmlar topilmadi</p>
+            <div className="text-center py-32">
+              <div className="text-6xl mb-8">🖼️</div>
+              <h3 className="text-2xl font-black text-slate-950 mb-2">Rasmlar topilmadi</h3>
+              <p className="text-slate-500 font-medium">Bu ruknda hozircha hech qanday rasm mavjud emas.</p>
             </div>
           ) : (
-            <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+            <div className="columns-1 sm:columns-2 lg:columns-4 gap-8 space-y-8">
               {allImages.map((img, i) => (
                 <div
                   key={img.id}
-                  className="relative group break-inside-avoid rounded-xl overflow-hidden cursor-pointer"
+                  className="relative group break-inside-avoid rounded-[40px] overflow-hidden bg-slate-100 cursor-pointer shadow-2xl shadow-slate-200/50 border border-slate-50 transition-all duration-700 hover:-translate-y-2"
                   onClick={() => setLightbox(img.image)}
                 >
                   <img
                     src={img.image}
                     alt={img.title || `Gallery ${i + 1}`}
-                    className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    style={{ aspectRatio: i % 4 === 0 ? '3/4' : i % 3 === 0 ? '4/3' : '1/1' }}
+                    className="w-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                    style={{ aspectRatio: i % 4 === 0 ? '3/4' : i % 3 === 0 ? '4/5' : '1/1' }}
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <ZoomIn size={28} className="text-white" />
-                      {img.title && (
-                        <span className="text-white text-xs font-medium px-3 text-center">{img.title}</span>
-                      )}
+                  
+                  {/* Overlay */}
+                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
+                    <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                       <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white mb-4 shadow-xl">
+                          <ZoomIn size={24} />
+                       </div>
+                       <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-1">{img.categoryName}</div>
+                       <div className="text-white font-black text-lg line-clamp-2 leading-tight">{img.title || "Maktab tadbiri"}</div>
                     </div>
                   </div>
                 </div>

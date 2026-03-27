@@ -26,25 +26,29 @@ export default function Header() {
   return (
     <header
       className={cn(
-        'fixed top-0 inset-x-0 z-50 transition-all duration-300',
-        scrolled ? 'glass-dark shadow-2xl' : 'bg-transparent',
+        'fixed top-0 inset-x-0 z-50 transition-all duration-500',
+        scrolled 
+          ? 'py-3 bg-slate-900/95 backdrop-blur-md shadow-2xl border-b border-white/5' 
+          : 'py-5 bg-slate-900/40 backdrop-blur-sm'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-18 py-3">
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <GraduationCap size={22} className="text-white" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/40 group-hover:scale-110 transition-all duration-300 ring-4 ring-blue-500/10">
+              <GraduationCap size={24} className="text-white" />
             </div>
-            <div>
-              <div className="font-black text-white text-lg leading-none">ELITA</div>
-              <div className="text-xs font-medium text-blue-300 leading-none tracking-widest">SCHOOL</div>
+            <div className="leading-tight">
+              <div className="font-black text-white text-xl tracking-tighter">
+                ELITA<span className="text-blue-500">.</span>
+              </div>
+              <div className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.3em]">SCHOOL</div>
             </div>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1 p-1 bg-white/[0.03] rounded-2xl border border-white/[0.05] backdrop-blur-md">
             {navLinks.map((link) => (
               <NavLink
                 key={link.to}
@@ -52,25 +56,28 @@ export default function Header() {
                 end={link.exact}
                 className={({ isActive }) =>
                   cn(
-                    'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                    'px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 relative group overflow-hidden',
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                      : 'text-blue-100 hover:bg-white/10 hover:text-white',
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                   )
                 }
               >
-                {link.label}
+                <span className="relative z-10">{link.label}</span>
+                {!scrolled && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-500 rounded-full transition-all group-hover:w-1/2" />
+                )}
               </NavLink>
             ))}
           </nav>
 
-          {/* Phone CTA */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* CTA */}
+          <div className="hidden lg:flex items-center gap-4">
             <a
               href="tel:+998991234567"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-semibold text-sm transition-all duration-200 shadow-md shadow-amber-500/30 hover:shadow-amber-400/40 hover:scale-105"
+              className="flex items-center gap-2.5 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-bold text-sm transition-all duration-300 shadow-lg shadow-orange-600/30 hover:-translate-y-0.5"
             >
-              <Phone size={15} />
+              <Phone size={16} fill="currentColor" />
               <span>Bog'lanish</span>
             </a>
           </div>
@@ -78,29 +85,37 @@ export default function Header() {
           {/* Hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="lg:hidden w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10 active:scale-90"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="lg:hidden glass-dark border-t border-white/10 px-4 py-4">
-          <nav className="flex flex-col gap-1">
-            {navLinks.map((link) => (
+      <div className={cn(
+        'lg:hidden fixed inset-0 top-[72px] z-40 transition-all duration-500 ease-in-out',
+        menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      )}>
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setMenuOpen(false)} />
+        <div className={cn(
+          'relative bg-slate-900 border-b border-white/10 px-4 py-8 shadow-2xl transition-transform duration-500',
+          menuOpen ? 'translate-y-0' : '-translate-y-full'
+        )}>
+          <nav className="flex flex-col gap-2">
+            {navLinks.map((link, idx) => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 end={link.exact}
                 onClick={() => setMenuOpen(false)}
+                style={{ transitionDelay: `${idx * 50}ms` }}
                 className={({ isActive }) =>
                   cn(
-                    'px-4 py-3 rounded-lg text-sm font-medium transition-all',
+                    'px-6 py-4 rounded-2xl text-lg font-bold transition-all block',
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-blue-100 hover:bg-white/10 hover:text-white',
+                      ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
                   )
                 }
               >
@@ -108,15 +123,17 @@ export default function Header() {
               </NavLink>
             ))}
           </nav>
-          <a
-            href="tel:+998991234567"
-            className="mt-4 flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-amber-500 text-white font-semibold text-sm"
-          >
-            <Phone size={16} />
-            Bog'lanish
-          </a>
+          <div className="mt-8 pt-8 border-t border-white/5">
+            <a
+              href="tel:+998991234567"
+              className="flex items-center justify-center gap-3 w-full py-5 rounded-2xl bg-orange-500 text-white font-black text-lg shadow-xl shadow-orange-600/20"
+            >
+              <Phone size={20} fill="currentColor" />
+              Bog'lanish
+            </a>
+          </div>
         </div>
-      )}
+      </div>
     </header>
   )
 }

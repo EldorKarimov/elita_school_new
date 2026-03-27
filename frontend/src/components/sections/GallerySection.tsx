@@ -1,27 +1,26 @@
 import { useState } from 'react'
 import type { GalleryCategory } from '@/types'
-import { X, ZoomIn } from 'lucide-react'
+import { X, ZoomIn, Grid } from 'lucide-react'
 
 function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.92)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl animate-fade-in"
       onClick={onClose}
     >
       <button
-        className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors"
-        style={{ background: 'rgba(255,255,255,0.1)' }}
+        className="absolute top-8 right-8 w-14 h-14 rounded-full flex items-center justify-center text-white bg-white/10 hover:bg-white/20 transition-all border border-white/10 active:scale-95 z-[110]"
         onClick={onClose}
       >
-        <X size={20} />
+        <X size={24} />
       </button>
-      <img
-        src={src}
-        alt="Gallery"
-        className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <div className="relative max-w-7xl w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+         <img
+          src={src}
+          alt="Gallery"
+          className="max-w-full max-h-[85vh] object-contain rounded-3xl shadow-[0_0_100px_rgba(37,99,235,0.2)] animate-reveal"
+        />
+      </div>
     </div>
   )
 }
@@ -37,54 +36,53 @@ export default function GallerySection({ gallery }: { gallery: GalleryCategory[]
   if (!allImages.length) return null
 
   return (
-    <section
-      className="section-padding"
-      style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e2d4a 100%)' }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="section-title-wrapper">
-          <span
-            className="section-badge"
-            style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.25)' }}
-          >
-            Galereya
-          </span>
-          <h2 className="text-4xl font-black text-white">
-            Hayotimizdan <span style={{ color: '#60a5fa' }}>lahzalar</span>
-          </h2>
-          <p className="text-center mt-3 max-w-md" style={{ color: '#64748b' }}>
-            Maktabimiz hayoti, tadbirlar va o'quv jarayonlari
-          </p>
+    <section className="section-spacing bg-ui-darker relative overflow-hidden">
+      {/* Decorative Orbs */}
+      <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-blue-600/10 blur-[150px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-blue-900/10 blur-[150px] rounded-full translate-x-1/3 translate-y-1/3" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+          <div className="max-w-2xl text-center md:text-left mx-auto md:mx-0">
+            <div className="section-label bg-white/5 text-blue-400 border-white/5">Galereya</div>
+            <h2 className="text-4xl sm:text-7xl font-black text-white leading-[1] tracking-tighter mb-6">
+              Maktab hayoti <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">lahzalarda</span>
+            </h2>
+            <p className="text-slate-400 text-lg font-medium leading-relaxed">
+              Bizning jonli muhitimiz, zamonaviy darslarimiz va unutilmas tadbirlarimizdan parchalar.
+            </p>
+          </div>
+          <button className="premium-button-primary px-10 gap-3">
+             <Grid size={20} />
+             To'liq galereya
+          </button>
         </div>
 
         {/* Masonry grid */}
-        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+        <div className="columns-1 sm:columns-2 lg:columns-4 gap-6 space-y-6">
           {allImages.map((img, i) => (
             <div
               key={img.id}
-              className="relative group break-inside-avoid rounded-xl overflow-hidden cursor-pointer"
-              style={{ background: '#1e293b' }}
+              className="relative group break-inside-avoid rounded-[32px] overflow-hidden cursor-pointer border border-white/5 bg-slate-900 shadow-2xl transition-all duration-700 hover:-translate-y-2 hover:border-blue-500/30"
               onClick={() => setLightbox(img.image)}
             >
               <img
                 src={img.image}
                 alt={img.title || `Gallery ${i + 1}`}
-                className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                style={{ aspectRatio: i % 3 === 0 ? '1/1.3' : i % 2 === 0 ? '1/1' : '4/3' }}
+                className="w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                style={{ aspectRatio: i % 3 === 0 ? '1/1.4' : i % 2 === 0 ? '1/1' : '4/5' }}
               />
+              
               {/* Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                <ZoomIn
-                  size={28}
-                  className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0"
-                />
-              </div>
-              {/* Category label */}
-              <div
-                className="absolute bottom-0 inset-x-0 px-3 py-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}
-              >
-                <span className="text-xs text-white font-medium">{img.categoryName}</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                   <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white mb-4 shadow-xl">
+                      <ZoomIn size={24} />
+                   </div>
+                   <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-1">{img.categoryName}</div>
+                   <div className="text-white font-black text-lg line-clamp-1">{img.title || "Maktab tadbiri"}</div>
+                </div>
               </div>
             </div>
           ))}
