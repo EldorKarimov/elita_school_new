@@ -33,7 +33,7 @@ class NewsListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = News
-        fields = ('uuid', 'category', 'title', 'slug', 'main_image', 'views_count', 'created_at')
+        fields = ('uuid', 'category', 'title', 'slug', 'main_image', 'views_count', 'publish_date', 'created_at')
 
 class NewsDetailSerializer(serializers.ModelSerializer):
     """Yangilikning to'liq ma'lumotlari uchun"""
@@ -44,7 +44,7 @@ class NewsDetailSerializer(serializers.ModelSerializer):
         model = News
         fields = (
             'uuid', 'category', 'title', 'slug', 'content', 
-            'main_image', 'additional_images', 'views_count', 'created_at'
+            'main_image', 'additional_images', 'views_count', 'publish_date', 'created_at'
         )
 
 

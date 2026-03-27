@@ -40,11 +40,13 @@ LOCAL_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'django_ckeditor_5',
+    'corsheaders',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS - birinchi bo'lishi shart
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware', # Tillar uchun
@@ -54,6 +56,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS — development uchun barcha origine ruxsat beriladi
+# Production da CORS_ALLOWED_ORIGINS = ["https://elita.uz"] qiling
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)
 
 ROOT_URLCONF = 'config.urls'
 
