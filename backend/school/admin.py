@@ -25,6 +25,12 @@ class LessonExampleInline(admin.StackedInline):
     extra = 1
     fields = ('title_uz', 'title_ru', 'title_en', 'youtube_link', 'is_active')
 
+
+class ScheduleInline(admin.TabularInline):
+    model = Schedule
+    extra = 1
+
+
 # --- ADMIN CLASSES ---
 
 @admin.register(Science)
@@ -42,11 +48,11 @@ class TeacherAdmin(BaseSchoolAdmin):
     list_editable = ('order', 'is_active')
     search_fields = ('full_name_uz', 'full_name_ru', 'full_name_en', 'phone')
     filter_horizontal = ('sciences',) # Fanlarni tanlash oson bo'lishi uchun
-    inlines = [LessonExampleInline]
+    inlines = [LessonExampleInline, ScheduleInline]
     
     fieldsets = (
         (_('Asosiy ma\'lumotlar'), {
-            'fields': ('full_name', 'image', 'sciences')
+            'fields': ('full_name', 'image', 'sciences', 'type', 'degree')
         }),
         (_('Kasbiy ma\'lumotlar'), {
             'fields': ('position_uz', 'position_ru', 'position_en', 'experience_uz', 'experience_ru', 'experience_en', 'order')
@@ -63,11 +69,7 @@ class TeacherAdmin(BaseSchoolAdmin):
         return "-"
     get_image.short_description = _("Rasm")
 
-@admin.register(Schedule)
-class ScheduleAdmin(admin.ModelAdmin): # Jadvalda tarjima yo'q, shuning uchun oddiy Admin
-    list_display = ('weekday', 'start_time', 'end_time', 'teacher', 'is_active')
-    list_filter = ('weekday', 'teacher', 'is_active')
-    readonly_fields = ('uuid', 'created_at', 'updated_at')
+
 
 @admin.register(About)
 class AboutAdmin(BaseSchoolAdmin):

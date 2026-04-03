@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from modeltranslation.admin import TranslationAdmin
-from .models import GalleryCategory, Gallery, NewsCategory, News, NewsImage, Tag, Blog
+from .models import GalleryCategory, Gallery, NewsCategory, News, NewsImage, Tag, BlogCategory, Blog, FAQ, SchoolHighlight
 
 # --- REUSABLE MIXIN ---
 class BaseContentAdmin(TranslationAdmin):
@@ -76,6 +76,7 @@ class NewsAdmin(BaseContentAdmin):
     list_display = ('get_image', 'title_uz', 'category', 'views_count', 'is_active')
     prepopulated_fields = {"slug": ("title_uz",)}
     inlines = [NewsImageInline]
+    readonly_fields = ('uuid', 'views_count')
     
     fieldsets = (
         (_('Sarlavhalar'), {
@@ -86,7 +87,7 @@ class NewsAdmin(BaseContentAdmin):
         (_('Ruscha matn'), {'fields': ('content_ru',), 'classes': ('collapse',)}),
         (_('Inglizcha matn'), {'fields': ('content_en',), 'classes': ('collapse',)}),
         (_('Statistika va Holat'), {
-            'fields': ('views_count', 'is_active', 'uuid'),
+            'fields': ('publish_date', 'views_count', 'is_active', 'uuid'),
         }),
     )
 
@@ -104,15 +105,27 @@ class TagAdmin(BaseContentAdmin):
         (_('Holat'), {'fields': ('is_active', 'uuid')}),
     )
 
+@admin.register(BlogCategory)
+class BlogCategoryAdmin(BaseContentAdmin):
+    list_display = ('name_uz', 'slug', 'is_active')
+    prepopulated_fields = {"slug": ("name_uz",)}
+    fieldsets = (
+        (_('Nomi'), {'fields': ('name_uz', 'name_ru', 'name_en')}),
+        (_('SEO'), {'fields': ('slug',)}),
+        (_('Holat'), {'fields': ('is_active', 'uuid')}),
+    )
+
+
 @admin.register(Blog)
 class BlogAdmin(BaseContentAdmin):
-    list_display = ('title_uz', 'author', 'is_active')
+    list_display = ('title_uz', 'category', 'author', 'is_active')
+    list_filter = ('is_active', 'category', 'created_at')
     filter_horizontal = ('tags',)
     prepopulated_fields = {"slug": ("title_uz",)}
-    
+
     fieldsets = (
         (_('Asosiy ma\'lumotlar'), {
-            'fields': ('author', 'tags', 'image', 'slug'),
+            'fields': ('category', 'author', 'tags', 'image', 'slug'),
         }),
         (_('Sarlavhalar'), {
             'fields': ('title_uz', 'title_ru', 'title_en'),
@@ -121,4 +134,40 @@ class BlogAdmin(BaseContentAdmin):
         (_('Maqola matni (RU)'), {'fields': ('content_ru',), 'classes': ('collapse',)}),
         (_('Maqola matni (EN)'), {'fields': ('content_en',), 'classes': ('collapse',)}),
         (_('Qo\'shimcha'), {'fields': ('is_active', 'uuid')}),
+    )
+
+
+@admin.register(SchoolHighlight)
+class SchoolHighlightAdmin(BaseContentAdmin):
+    list_display = ('get_preview', 'title_uz', 'order', 'is_active')
+    list_editable = ('order', 'is_active')
+    ordering = ('order',)
+
+    fieldsets = (
+        (_('Sarlavha'), {'fields': ('title_uz', 'title_ru', 'title_en')}),
+        (_('Video'), {'fields': ('youtube_link',)}),
+        (_('Sozlamalar'), {'fields': ('order', 'is_active', 'uuid')}),
+    )
+
+    def get_preview(self, obj):
+        import re
+        m = re.search(r'(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})', obj.youtube_link or '')
+        if m:
+            vid = m.group(1)
+            return mark_safe(f'<img src="https://img.youtube.com/vi/{vid}/default.jpg" width="80" style="border-radius:4px;"/>')
+        return '-'
+    get_preview.short_description = _("Preview")
+
+
+@admin.register(FAQ)
+class FAQAdmin(BaseContentAdmin):
+    list_display = ('question_uz', 'order', 'is_active')
+    list_editable = ('order', 'is_active')
+    ordering = ('order',)
+
+    fieldsets = (
+        (_('Savol va Javob (UZ)'), {'fields': ('question_uz', 'answer_uz')}),
+        (_('Savol va Javob (RU)'), {'fields': ('question_ru', 'answer_ru'), 'classes': ('collapse',)}),
+        (_('Savol va Javob (EN)'), {'fields': ('question_en', 'answer_en'), 'classes': ('collapse',)}),
+        (_('Sozlamalar'), {'fields': ('order', 'is_active', 'uuid')}),
     )

@@ -1,5 +1,6 @@
+import re
 from rest_framework import serializers
-from .models import GalleryCategory, Gallery, NewsCategory, News, NewsImage, Tag, Blog
+from .models import GalleryCategory, Gallery, NewsCategory, News, NewsImage, Tag, BlogCategory, Blog, FAQ, SchoolHighlight
 
 # --- GALLERY SERIALIZERS ---
 class GallerySerializer(serializers.ModelSerializer):
@@ -14,6 +15,23 @@ class GalleryCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryCategory
         fields = ('uuid', 'name', 'images')
+
+class GalleryCategoryListSerializer(serializers.ModelSerializer):
+    """Faqat filter uchun — rasmlarsiz"""
+    images_count = serializers.IntegerField(source='images.count', read_only=True)
+
+    class Meta:
+        model = GalleryCategory
+        fields = ('uuid', 'name', 'images_count')
+
+class GalleryImageSerializer(serializers.ModelSerializer):
+    """Paginated rasmlar uchun — category ma'lumoti bilan"""
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_uuid = serializers.UUIDField(source='category.uuid', read_only=True)
+
+    class Meta:
+        model = Gallery
+        fields = ('uuid', 'title', 'image', 'category_uuid', 'category_name', 'created_at')
 
 
 # --- NEWS SERIALIZERS ---
@@ -54,16 +72,67 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('uuid', 'name', 'slug')
 
+
+class BlogCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogCategory
+        fields = ('uuid', 'name', 'slug')
+
+
+class BlogAuthorSerializer(serializers.Serializer):
+    uuid = serializers.UUIDField()
+    full_name = serializers.CharField()
+    image = serializers.ImageField()
+    position = serializers.CharField()
+
+
 class BlogListSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
+    category = BlogCategorySerializer(read_only=True)
+    author = BlogAuthorSerializer(read_only=True)
+    excerpt = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
-        fields = ('uuid', 'title', 'slug', 'image', 'author', 'tags', 'created_at')
+        fields = ('uuid', 'title', 'slug', 'image', 'category', 'author', 'tags', 'excerpt', 'created_at')
+
+    def get_excerpt(self, obj):
+        import re
+        text = re.sub(r'<[^>]+>', ' ', obj.content or '')
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text[:250] + '…' if len(text) > 250 else text
+
 
 class BlogDetailSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
+    category = BlogCategorySerializer(read_only=True)
+    author = BlogAuthorSerializer(read_only=True)
 
     class Meta:
         model = Blog
-        fields = ('uuid', 'title', 'slug', 'content', 'image', 'author', 'tags', 'created_at')
+        fields = ('uuid', 'title', 'slug', 'content', 'image', 'category', 'author', 'tags', 'created_at')
+
+# --- SCHOOL HIGHLIGHT SERIALIZERS ---
+class SchoolHighlightSerializer(serializers.ModelSerializer):
+    youtube_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SchoolHighlight
+        fields = ('uuid', 'title', 'youtube_link', 'youtube_id', 'order')
+
+    def get_youtube_id(self, obj):
+        patterns = [
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})',
+        ]
+        for p in patterns:
+            m = re.search(p, obj.youtube_link)
+            if m:
+                return m.group(1)
+        return None
+
+
+# --- FAQ SERIALIZERS ---
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ('uuid', 'question', 'answer', 'order')

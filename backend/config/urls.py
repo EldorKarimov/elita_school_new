@@ -7,6 +7,7 @@ from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
     path('ckeditor5/', include('django_ckeditor_5.urls')),
+    path('api/v1/', include('core.urls')),
     path('api/v1/', include('school.urls')),
     path('api/v1/', include('content.urls')),
 ]

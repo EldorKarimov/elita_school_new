@@ -27,7 +27,7 @@ class TeacherListSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = (
             'uuid', 'full_name', 'image', 'position',
-            'experience', 'type', 'degree', 'sciences', 'order'
+            'experience', 'about', 'type', 'degree', 'sciences', 'order'
         )
 
 

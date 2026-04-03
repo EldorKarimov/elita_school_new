@@ -42,7 +42,11 @@ class Teacher(BaseModel):
     )
     
     full_name = models.CharField(max_length=255, verbose_name=_("To'liq ism"))
-    image = models.ImageField(upload_to='school/teachers/', verbose_name=_("Rasm"))
+    image = models.ImageField(
+        upload_to='school/teachers/',
+        verbose_name=_("Rasm"),
+        help_text=_("Tavsiya etilgan o'lcham: 600×800 px. Nisbat: 3:4 (portret). Fayl: JPG yoki PNG, max 2 MB.")
+    )
     experience = models.CharField(max_length=100, verbose_name=_("Tajriba"))
     phone = models.CharField(max_length=20, verbose_name=_("Telefon"), blank=True)
     sciences = models.ManyToManyField(
@@ -93,15 +97,29 @@ class Schedule(BaseModel):
 
 
     class Meta:
-        verbose_name = _("Dars jadvali")
-        verbose_name_plural = _("Dars jadvallari")
+        verbose_name = _("Ish vaqti")
+        verbose_name_plural = _("Ish vaqtlari")
 
 # --- MAKTAB HAQIDA (ABOUT) ---
 class About(BaseModel):
     content = CKEditor5Field(verbose_name=_("Maktab haqida matn"), config_name='extends')
-    photo1 = models.ImageField(upload_to='school/about/', verbose_name=_("Rasm 1"))
-    photo2 = models.ImageField(upload_to='school/about/', blank=True, null=True, verbose_name=_("Rasm 2"))
-    photo3 = models.ImageField(upload_to='school/about/', blank=True, null=True, verbose_name=_("Rasm 3"))
+    photo1 = models.ImageField(
+        upload_to='school/about/',
+        verbose_name=_("Rasm 1"),
+        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
+    )
+    photo2 = models.ImageField(
+        upload_to='school/about/',
+        blank=True, null=True,
+        verbose_name=_("Rasm 2"),
+        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
+    )
+    photo3 = models.ImageField(
+        upload_to='school/about/',
+        blank=True, null=True,
+        verbose_name=_("Rasm 3"),
+        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
+    )
 
     class Meta:
         verbose_name = _("Maktab haqida")
