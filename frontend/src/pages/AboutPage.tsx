@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAbout, useStatistics, useTeachers, useSiteSettings } from '@/hooks/useSchool'
+import { useAbout, useStatistics, useTeachers } from '@/hooks/useSchool'
 import { mediaUrl } from '@/lib/utils'
 
 // --- Animated counter ---
@@ -472,8 +472,6 @@ export default function AboutPage() {
   const { data: about, isLoading: aboutLoading } = useAbout()
   const { data: stats = [], isLoading: statsLoading } = useStatistics()
   const { data: management = [], isLoading: mgmtLoading } = useTeachers('management')
-  const { data: settings } = useSiteSettings()
-
   const VALUES = [1, 2, 3, 4].map((n, i) => ({
     icon: VALUE_ICONS[i],
     title: t(`about_page.value${n}_title`),

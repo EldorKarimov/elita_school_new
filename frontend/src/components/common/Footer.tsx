@@ -46,8 +46,6 @@ const SOCIALS = [
 export function Footer() {
   const { t } = useTranslation()
   const { data: settings } = useSiteSettings()
-  const year = new Date().getFullYear()
-
   const logoSrc = settings?.logo ? mediaUrl(settings.logo) : logo
 
   const socials = [
