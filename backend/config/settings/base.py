@@ -177,3 +177,5 @@ CACHES = {
 
 # Sessions — database (default), Redis cache bilan parallel ishlatiladi
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+CSRF_TRUSTED_ORIGINS=config("CSRF_TRUSTED_ORIGINS", cast=Csv())
