@@ -205,7 +205,7 @@ export default function TeacherDetailPage() {
           <div className="flex items-center gap-2 text-xs text-white/40">
             <Link to="/" className="hover:text-white/70 transition-colors">{t('common.home')}</Link>
             <span>/</span>
-            <Link to="/teachers" className="hover:text-white/70 transition-colors">{t('nav.teachers')}</Link>
+            <Link to="/teachers" className="hover:text-white/70 transition-colors">Xodimlar</Link>
             {teacher && (
               <>
                 <span>/</span>
@@ -333,7 +333,9 @@ export default function TeacherDetailPage() {
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-8">
                   <div className="mb-5 flex items-center gap-2">
                     <span className="h-4 w-1 rounded-full bg-[#274c8f]" />
-                    <h2 className="text-base font-bold text-gray-900">{t('teacher_detail.about_title')}</h2>
+                    <h2 className="text-base font-bold text-gray-900">
+                      {teacher.type === 'management' ? 'Xodim haqida' : t('teacher_detail.about_title')}
+                    </h2>
                   </div>
                   <div
                     className="ck-content"

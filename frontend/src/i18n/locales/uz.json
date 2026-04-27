@@ -182,11 +182,11 @@
     "person": "kishi",
     "director_badge": "★ Direktor",
     "detail_btn": "Batafsil",
-    "teachers_title": "O'qituvchilar",
+    "teachers_title": "Xodimlar",
     "showing": "ta ko'rsatilmoqda",
     "load_more": "Ko'proq ko'rish",
     "remaining": "ta qoldi",
-    "all_shown": "ta o'qituvchi ko'rsatildi"
+    "all_shown": "ta xodim ko'rsatildi"
   },
   "news_page": {
     "label": "So'nggi yangiliklar",
@@ -226,7 +226,7 @@
     "sciences": "Fanlar",
     "experience": "Tajriba",
     "lessons_count": "Dars namunasi",
-    "back_to_list": "O'qituvchilar ro'yxati",
+    "back_to_list": "Xodimlar ro'yxati",
     "about_title": "O'qituvchi haqida",
     "lessons_title": "Dars namunalari",
     "schedule_title": "Ish jadvali",

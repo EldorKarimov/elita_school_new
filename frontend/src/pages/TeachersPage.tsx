@@ -7,9 +7,6 @@ import type { Teacher } from '@/types'
 
 const STEP = 6
 
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-}
 
 const DEGREE_LABELS: Record<string, string> = {
   bachelor: 'Bakalavr',
@@ -27,69 +24,49 @@ const DEGREE_COLORS: Record<string, string> = {
   none: '',
 }
 
-// --- Direktor karta (katta, alohida) ---
-function DirectorCard({ teacher }: { teacher: Teacher }) {
+// --- Direktor karta (ManagementCard ga o'xshash, lekin ajralib turadi) ---
+function DirectorGridCard({ teacher }: { teacher: Teacher }) {
   return (
     <Link
       to={`/teachers/${teacher.uuid}`}
-      className="group relative mb-6 flex flex-col overflow-hidden rounded-3xl bg-[#274c8f] shadow-xl shadow-[#274c8f]/20 transition-all hover:shadow-2xl hover:shadow-[#274c8f]/30 hover:-translate-y-1 sm:flex-row sm:min-h-[280px]"
+      className="group flex flex-col overflow-hidden rounded-2xl border-2 border-[#274c8f]/30 bg-white shadow-md shadow-[#274c8f]/10 transition-all hover:border-[#274c8f]/60 hover:shadow-lg hover:shadow-[#274c8f]/20 hover:-translate-y-0.5"
     >
-      {/* Left — photo */}
-      <div className="relative h-64 w-full shrink-0 overflow-hidden sm:h-auto sm:w-64">
+      {/* Photo */}
+      <div className="relative w-full overflow-hidden" style={{ paddingBottom: '100%' }}>
         <img
           src={mediaUrl(teacher.image)}
           alt={teacher.full_name}
-          className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#274c8f]/60 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-[#274c8f]/40" />
+        {/* Direktor badge — chap yuqori burchak */}
+        <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[#274c8f] px-2.5 py-1 text-[10px] font-bold text-white shadow">
+          <CrownIcon /> Direktor
+        </span>
+        {teacher.degree !== 'none' && (
+          <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm ${DEGREE_COLORS[teacher.degree]}`}>
+            {DEGREE_LABELS[teacher.degree]}
+          </span>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
 
-      {/* Right — content */}
-      <div className="relative flex flex-1 flex-col justify-between p-7 sm:p-8">
-        {/* Decorative circle */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/5" />
-        <div className="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-white/5" />
+      {/* Content */}
+      <div className="flex flex-1 flex-col p-4">
+        <span className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[#274c8f]">
+          Direktor
+        </span>
+        <h3 className="font-bold text-gray-900 leading-snug group-hover:text-[#274c8f] transition-colors line-clamp-1">
+          {teacher.full_name}
+        </h3>
+        <p className="mt-0.5 text-xs italic text-gray-500 line-clamp-1">{teacher.position}</p>
 
-        <div className="relative">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
-              ★ Director
-            </span>
-            {teacher.degree !== 'none' && (
-              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/80">
-                {DEGREE_LABELS[teacher.degree]}
-              </span>
-            )}
-          </div>
-
-          <h3 className="text-2xl font-extrabold text-white sm:text-3xl">
-            {teacher.full_name}
-          </h3>
-          <p className="mt-1 text-base font-medium italic text-white/70">{teacher.position}</p>
-
-          {teacher.about && (
-            <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-white/60">
-              {stripHtml(teacher.about)}
-            </p>
-          )}
-        </div>
-
-        <div className="relative mt-6 flex flex-wrap items-center gap-3 border-t border-white/15 pt-5">
-          <div className="flex items-center gap-2 text-sm text-white/70">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 text-white">
-              <ClockIcon />
-            </div>
+        <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <ClockIcon />
             {teacher.experience}
           </div>
-
-          {teacher.sciences.slice(0, 3).map(s => (
-            <span key={s.uuid} className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/80">
-              {s.name}
-            </span>
-          ))}
-
-          <span className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-white/60 transition-all group-hover:text-white group-hover:gap-2">
-            Batafsil <ArrowIcon />
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#274c8f] opacity-0 transition-opacity group-hover:opacity-100">
+            Ko'rish <ArrowIcon />
           </span>
         </div>
       </div>
@@ -297,28 +274,21 @@ export default function TeachersPage() {
           </div>
 
           {mgLoading ? (
-            <div className="flex flex-col gap-4">
-              <SkeletonManagement />
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map(i => <SkeletonManagement key={i} />)}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="col-span-1 sm:col-span-2">
+                <SkeletonManagement />
               </div>
+              {[1, 2].map(i => <SkeletonManagement key={i} />)}
             </div>
           ) : management?.length === 0 ? (
             <p className="text-gray-400">Ma'lumot yo'q</p>
           ) : (
-            <>
-              {/* Birinchi — Direktor (alohida katta karta) */}
-              {management?.[0] && <DirectorCard teacher={management[0]} />}
-
-              {/* Qolganlar — yonma-yon grid */}
-              {management && management.length > 1 && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {management.slice(1).map(t => (
-                    <ManagementCard key={t.uuid} teacher={t} />
-                  ))}
-                </div>
-              )}
-            </>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {management?.[0] && <DirectorGridCard teacher={management[0]} />}
+              {management?.slice(1).map(member => (
+                <ManagementCard key={member.uuid} teacher={member} />
+              ))}
+            </div>
           )}
         </div>
 
@@ -390,6 +360,13 @@ export default function TeachersPage() {
 }
 
 // --- Icons ---
+function CrownIcon() {
+  return (
+    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M2 19h20v2H2v-2zm2-2l3-8 5 4 5-6 3 10H4z" />
+    </svg>
+  )
+}
 function ClockIcon() {
   return (
     <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
