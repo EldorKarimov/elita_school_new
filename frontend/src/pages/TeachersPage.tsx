@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTeachers } from '@/hooks/useSchool'
@@ -204,14 +204,20 @@ function SkeletonTeacher() {
 // --- Main page ---
 export default function TeachersPage() {
   const { t } = useTranslation()
-  const [visibleCount, setVisibleCount] = useState(STEP)
+  const [page, setPage] = useState(1)
+  const [accTeachers, setAccTeachers] = useState<Teacher[]>([])
 
-  const { data: management, isLoading: mgLoading } = useTeachers('management')
-  const { data: teachers, isLoading: tchLoading } = useTeachers('teacher')
+  const { data: managementData, isLoading: mgLoading } = useTeachers({ type: 'management', pageSize: 100 })
+  const { data: teachersData, isLoading: tchLoading } = useTeachers({ type: 'teacher', page, pageSize: STEP })
 
-  const visibleTeachers = teachers?.slice(0, visibleCount) ?? []
-  const total = teachers?.length ?? 0
-  const hasMore = visibleCount < total
+  const management = managementData?.data ?? []
+  const total = teachersData?.pagination?.totalCount ?? 0
+  const hasMore = accTeachers.length < total
+
+  useEffect(() => {
+    if (!teachersData?.data) return
+    setAccTeachers(prev => page === 1 ? teachersData.data : [...prev, ...teachersData.data])
+  }, [teachersData, page])
 
   return (
     <div className="min-h-screen bg-[#f8faff]">
@@ -233,7 +239,7 @@ export default function TeachersPage() {
           {!mgLoading && !tchLoading && (
             <div className="mt-8 inline-flex divide-x divide-white/20 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm">
               <div className="px-8 py-4">
-                <p className="text-2xl font-extrabold text-white">{management?.length ?? 0}</p>
+                <p className="text-2xl font-extrabold text-white">{managementData?.pagination?.totalCount ?? 0}</p>
                 <p className="text-xs text-white/60">{t('teachers_page.stat_management')}</p>
               </div>
               <div className="px-8 py-4">
@@ -241,7 +247,7 @@ export default function TeachersPage() {
                 <p className="text-xs text-white/60">{t('teachers_page.stat_teachers')}</p>
               </div>
               <div className="px-8 py-4">
-                <p className="text-2xl font-extrabold text-white">{(management?.length ?? 0) + total}</p>
+                <p className="text-2xl font-extrabold text-white">{(managementData?.pagination?.totalCount ?? 0) + total}</p>
                 <p className="text-xs text-white/60">{t('teachers_page.stat_total')}</p>
               </div>
             </div>
@@ -268,7 +274,7 @@ export default function TeachersPage() {
             <div className="ml-auto h-px flex-1 bg-gray-200" />
             {!mgLoading && (
               <span className="shrink-0 rounded-full bg-[#274c8f] px-3 py-1 text-sm font-bold text-white">
-                {management?.length ?? 0} {t('teachers_page.person')}
+                {managementData?.pagination?.totalCount ?? 0} {t('teachers_page.person')}
               </span>
             )}
           </div>
@@ -280,12 +286,12 @@ export default function TeachersPage() {
               </div>
               {[1, 2].map(i => <SkeletonManagement key={i} />)}
             </div>
-          ) : management?.length === 0 ? (
+          ) : management.length === 0 ? (
             <p className="text-gray-400">Ma'lumot yo'q</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {management?.[0] && <DirectorGridCard teacher={management[0]} />}
-              {management?.slice(1).map(member => (
+              {management[0] && <DirectorGridCard teacher={management[0]} />}
+              {management.slice(1).map(member => (
                 <ManagementCard key={member.uuid} teacher={member} />
               ))}
             </div>
@@ -298,7 +304,7 @@ export default function TeachersPage() {
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900">{t('teachers_page.teachers_title')}</h2>
               <p className="mt-1 text-sm text-gray-500">
-                {tchLoading ? '...' : `${Math.min(visibleCount, total)} ${t('teachers_page.showing')}`}
+                {tchLoading ? '...' : `${accTeachers.length} ${t('teachers_page.showing')}`}
               </p>
             </div>
             <div className="ml-auto h-px flex-1 bg-gray-200" />
@@ -309,35 +315,42 @@ export default function TeachersPage() {
             )}
           </div>
 
-          {tchLoading ? (
+          {tchLoading && accTeachers.length === 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {Array.from({ length: STEP }).map((_, i) => <SkeletonTeacher key={i} />)}
             </div>
           ) : (
             <>
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                {visibleTeachers.map(t => <TeacherCard key={t.uuid} teacher={t} />)}
+                {accTeachers.map(t => <TeacherCard key={t.uuid} teacher={t} />)}
               </div>
 
+              {/* Loading more spinner */}
+              {tchLoading && accTeachers.length > 0 && (
+                <div className="mt-8 flex justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#274c8f]/20 border-t-[#274c8f]" />
+                </div>
+              )}
+
               {/* Load more */}
-              {hasMore && (
+              {hasMore && !tchLoading && (
                 <div className="mt-10 flex flex-col items-center gap-3">
                   {/* Progress bar */}
                   <div className="w-48 overflow-hidden rounded-full bg-gray-200 h-1.5">
                     <div
                       className="h-full rounded-full bg-[#274c8f] transition-all duration-500"
-                      style={{ width: `${(visibleCount / total) * 100}%` }}
+                      style={{ width: `${(accTeachers.length / total) * 100}%` }}
                     />
                   </div>
                   <p className="text-xs text-gray-400">
-                    {visibleCount} / {total}
+                    {accTeachers.length} / {total}
                   </p>
                   <button
-                    onClick={() => setVisibleCount(v => v + STEP)}
+                    onClick={() => setPage(p => p + 1)}
                     className="mt-2 flex items-center gap-2 rounded-xl border-2 border-[#274c8f]/20 bg-white px-8 py-3 text-sm font-semibold text-[#274c8f] transition-all hover:border-[#274c8f] hover:bg-[#274c8f] hover:text-white hover:shadow-lg hover:shadow-[#274c8f]/20"
                   >
                     <MoreIcon />
-                    {t('teachers_page.load_more')} ({total - visibleCount} {t('teachers_page.remaining')})
+                    {t('teachers_page.load_more')} ({total - accTeachers.length} {t('teachers_page.remaining')})
                   </button>
                 </div>
               )}

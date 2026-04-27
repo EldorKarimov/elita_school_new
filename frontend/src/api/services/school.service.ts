@@ -1,4 +1,4 @@
-import type { ApiResponse, HomeData, About, Statistic, Teacher, TeacherDetail, ContactForm, SiteSettings } from '@/types'
+import type { ApiResponse, PaginatedResponse, HomeData, About, Statistic, Teacher, TeacherDetail, ContactForm, SiteSettings } from '@/types'
 import apiClient from '../client'
 import { ENDPOINTS } from '../endpoints'
 
@@ -23,10 +23,13 @@ export const schoolService = {
     return data.data
   },
 
-  getTeachers: async (type?: 'management' | 'teacher'): Promise<Teacher[]> => {
-    const params = type ? { type } : {}
-    const { data } = await apiClient.get<ApiResponse<Teacher[]>>(ENDPOINTS.TEACHERS, { params })
-    return data.data
+  getTeachers: async (params: {
+    type?: 'management' | 'teacher'
+    page?: number
+    pageSize?: number
+  } = {}): Promise<PaginatedResponse<Teacher>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Teacher>>(ENDPOINTS.TEACHERS, { params })
+    return data
   },
 
   getTeacherDetail: async (uuid: string): Promise<TeacherDetail> => {

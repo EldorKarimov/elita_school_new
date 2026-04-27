@@ -90,7 +90,8 @@
     "degree_label": "Ilmiy daraja:",
     "experience_label": "Tajriba:",
     "sciences_label": "Fanlar:",
-    "profile_btn": "Profilni ko'rish"
+    "profile_btn": "Profilni ko'rish",
+    "all_btn": "Barcha o'qituvchilar"
   },
   "news_section": {
     "label": "So'nggi yangiliklar",

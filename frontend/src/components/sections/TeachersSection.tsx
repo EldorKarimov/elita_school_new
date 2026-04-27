@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTeachers } from '@/hooks/useSchool'
 import { mediaUrl } from '@/lib/utils'
-import type { TeacherDegree } from '@/types'
+import type { TeacherDegree, Teacher } from '@/types'
+
+const VISIBLE = 10
 
 const DEGREE_LABELS: Record<TeacherDegree, string> = {
   bachelor: 'Bakalavr',
@@ -20,243 +22,295 @@ function imgSrc(path: string | null | undefined) {
   return path ? mediaUrl(path) : PLACEHOLDER
 }
 
+// --- Compact carousel card ---
+function CarouselCard({ teacher, isActive, onClick }: {
+  teacher: Teacher
+  isActive: boolean
+  onClick: () => void
+}) {
+  const firstName = teacher.full_name.split(' ')[0]
+  return (
+    <button
+      onClick={onClick}
+      title={teacher.full_name}
+      className="group flex w-16 shrink-0 flex-col items-center gap-1.5 rounded-xl py-2 transition-all duration-200 md:w-auto md:flex-1"
+    >
+      <div className={`relative h-12 w-12 overflow-hidden rounded-full border-2 transition-all duration-200 md:h-14 md:w-14 ${
+        isActive
+          ? 'border-[#274c8f] shadow-lg shadow-[#274c8f]/25 scale-110'
+          : 'border-gray-200 grayscale group-hover:grayscale-0 group-hover:border-[#274c8f]/40 group-hover:scale-105'
+      }`}>
+        <img
+          src={imgSrc(teacher.image)}
+          alt={teacher.full_name}
+          className="h-full w-full object-cover object-top"
+          onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }}
+        />
+        {isActive && (
+          <div className="absolute inset-0 rounded-full ring-2 ring-[#274c8f] ring-offset-1" />
+        )}
+      </div>
+      <span className={`line-clamp-1 w-full text-center text-[10px] font-semibold leading-tight transition-colors ${
+        isActive ? 'text-[#274c8f]' : 'text-gray-400 group-hover:text-gray-700'
+      }`}>
+        {firstName}
+      </span>
+      <div className={`h-1 w-1 rounded-full transition-all duration-200 ${isActive ? 'bg-[#274c8f] scale-125' : 'bg-transparent'}`} />
+    </button>
+  )
+}
+
+// --- Detail panel for selected teacher ---
+function DetailPanel({ teacher }: { teacher: Teacher }) {
+  const degree = DEGREE_LABELS[teacher.degree]
+  const aboutText = teacher.about
+    ? teacher.about.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+    : ''
+
+  return (
+    <div
+      key={teacher.uuid}
+      className="carousel-detail mt-8 flex flex-col gap-6 overflow-hidden rounded-2xl bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] p-6 md:flex-row md:items-start md:gap-8 md:p-8"
+    >
+      {/* Photo */}
+      <div className="relative mx-auto h-52 w-44 shrink-0 overflow-hidden rounded-xl shadow-md md:mx-0">
+        <img
+          src={imgSrc(teacher.image)}
+          alt={teacher.full_name}
+          className="h-full w-full object-cover object-top"
+          onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }}
+        />
+        {teacher.type === 'management' && (
+          <span className="absolute left-2 top-2 rounded-full bg-[#274c8f] px-2 py-0.5 text-[10px] font-bold text-white">
+            Rahbariyat
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-1 flex-col">
+        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#274c8f]/60">
+          {teacher.position}
+        </p>
+        <h3 className="text-2xl font-extrabold text-gray-900 md:text-3xl">
+          {teacher.full_name}
+        </h3>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {degree && (
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#274c8f] shadow-sm">
+              🎓 {degree}
+            </span>
+          )}
+          {teacher.experience && (
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-600 shadow-sm">
+              ⏱ {teacher.experience}
+            </span>
+          )}
+          {teacher.sciences.slice(0, 3).map(s => (
+            <span key={s.uuid} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-600 shadow-sm">
+              📚 {s.name}
+            </span>
+          ))}
+        </div>
+
+        {aboutText && (
+          <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-gray-600">
+            {aboutText}
+          </p>
+        )}
+
+        <div className="mt-6">
+          <Link
+            to={`/teachers/${teacher.uuid}`}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#274c8f] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#1a3465] hover:shadow-md active:scale-95"
+          >
+            Profilni ko'rish
+            <ArrowIcon />
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Skeleton ---
 function Skeleton() {
   return (
     <section className="bg-white py-20">
-      <div className="container mx-auto max-w-5xl px-4">
+      <div className="container mx-auto max-w-6xl px-4">
         <div className="mb-10 flex flex-col items-center gap-3">
           <div className="h-4 w-40 animate-pulse rounded-full bg-gray-100" />
           <div className="h-9 w-80 animate-pulse rounded bg-gray-200" />
+          <div className="h-4 w-56 animate-pulse rounded bg-gray-100" />
         </div>
-        <div className="flex gap-10">
-          <div className="h-[480px] w-[42%] animate-pulse rounded-2xl bg-gray-100" />
-          <div className="flex flex-1 flex-col gap-4 pt-4">
-            <div className="flex gap-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-14 w-14 animate-pulse rounded-full bg-gray-100" />
-              ))}
+        <div className="flex items-end gap-3 px-12">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+              <div className="h-14 w-14 animate-pulse rounded-full bg-gray-100" />
+              <div className="h-2 w-10 animate-pulse rounded bg-gray-100" />
             </div>
-            <div className="mt-4 h-7 w-48 animate-pulse rounded bg-gray-200" />
-            <div className="h-4 w-32 animate-pulse rounded bg-gray-100" />
-            <div className="mt-2 space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />)}
-            </div>
-          </div>
+          ))}
         </div>
+        <div className="mt-8 h-52 animate-pulse rounded-2xl bg-gray-100" />
       </div>
     </section>
   )
 }
 
+// --- Main section ---
 export function TeachersSection() {
   const { t } = useTranslation()
-  const { data: teachers, isLoading } = useTeachers()
-  const [activeUuid, setActiveUuid] = useState<string | null>(null)
+  const { data: teachersData, isLoading } = useTeachers({ pageSize: 15 })
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [windowStart, setWindowStart] = useState(0)
 
   if (isLoading) return <Skeleton />
-  if (!teachers || teachers.length === 0) return null
+  if (!teachersData?.data?.length) return null
 
-  const sorted = [...teachers].sort((a, b) => {
+  const sorted = [...teachersData.data].sort((a, b) => {
     if (a.type === 'management' && b.type !== 'management') return -1
     if (b.type === 'management' && a.type !== 'management') return 1
     return a.order - b.order
   })
 
-  const current = sorted.find(t => t.uuid === (activeUuid ?? sorted[0].uuid)) ?? sorted[0]
-  const degree = DEGREE_LABELS[current.degree]
+  const windowEnd = Math.min(windowStart + VISIBLE, sorted.length)
+  const slice = sorted.slice(windowStart, windowEnd)
+  const canPrev = windowStart > 0
+  const canNext = windowEnd < sorted.length
+  const current = sorted[activeIdx] ?? sorted[0]
+  const totalPages = Math.ceil(sorted.length / VISIBLE)
+  const currentPage = Math.floor(windowStart / VISIBLE)
 
-  // HTML taglarini tozalash
-  const aboutText = current.about
-    ? current.about.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-    : ''
+  function goPrev() {
+    const newStart = Math.max(0, windowStart - VISIBLE)
+    setWindowStart(newStart)
+    setActiveIdx(newStart)
+  }
+
+  function goNext() {
+    setWindowStart(windowEnd)
+    setActiveIdx(windowEnd)
+  }
 
   return (
     <section className="bg-white py-20">
-      <div className="container mx-auto max-w-5xl px-4">
+      <style>{`
+        @keyframes carouselFade {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .carousel-slide { animation: carouselFade 0.25s ease forwards; }
+        @keyframes detailFade {
+          from { opacity: 0; transform: translateX(-8px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .carousel-detail { animation: detailFade 0.3s ease forwards; }
+      `}</style>
+
+      <div className="container mx-auto max-w-6xl px-4">
 
         {/* Header */}
-        <div className="mb-14 text-center">
+        <div className="mb-10 text-center">
           <span className="mb-3 inline-block rounded-full bg-[#274c8f]/8 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
             {t('teachers_section.label')}
           </span>
-          <h2 className="mb-4 text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h2 className="mb-3 text-3xl font-extrabold text-gray-900 md:text-4xl">
             {t('teachers_section.title')}
           </h2>
-          <p className="mx-auto max-w-2xl text-base text-gray-500 md:text-lg">
+          <p className="mx-auto max-w-2xl text-base text-gray-500">
             {t('teachers_section.subtitle')}
           </p>
         </div>
 
-        {/* Main layout */}
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-12">
+        {/* Carousel row */}
+        <div className="flex items-center gap-2">
+          {/* Prev */}
+          <button
+            onClick={goPrev}
+            disabled={!canPrev}
+            aria-label="Oldingi"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 text-gray-400 transition-all hover:border-[#274c8f] hover:text-[#274c8f] disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronLeftIcon />
+          </button>
 
-          {/* LEFT — rasm */}
-          <div className="relative mx-auto w-full max-w-sm shrink-0 md:w-[42%]">
-            {/* Dekorativ frame */}
-            <div className="absolute -bottom-3 -right-3 h-full w-full rounded-2xl border-2 border-[#274c8f]/15" />
-            <div className="relative overflow-hidden rounded-2xl bg-[#eef2fa] shadow-md">
-              <img
-                key={current.uuid}
-                src={imgSrc(current.image)}
-                alt={current.full_name}
-                className="h-[440px] w-full object-cover object-top transition-opacity duration-300 md:h-[480px]"
-                onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }}
+          {/* Cards */}
+          <div
+            key={windowStart}
+            className="carousel-slide flex flex-1 items-end gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:overflow-x-visible"
+          >
+            {slice.map(teacher => (
+              <CarouselCard
+                key={teacher.uuid}
+                teacher={teacher}
+                isActive={teacher.uuid === current.uuid}
+                onClick={() => setActiveIdx(sorted.indexOf(teacher))}
               />
-              {current.type === 'management' && (
-                <span className="absolute left-4 top-4 rounded-full bg-[#274c8f] px-3 py-1 text-xs font-bold text-white shadow">
-                  {t('teachers_section.director_badge')}
-                </span>
-              )}
-            </div>
+            ))}
           </div>
 
-          {/* RIGHT — info */}
-          <div className="flex flex-1 flex-col">
-
-            {/* Thumbnails */}
-            <div className="mb-6 flex items-center gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {sorted.map(t => {
-                const isActive = t.uuid === current.uuid
-                return (
-                  <button
-                    key={t.uuid}
-                    onClick={() => setActiveUuid(t.uuid)}
-                    title={t.full_name}
-                    className="shrink-0 transition-transform hover:scale-105"
-                  >
-                    <div
-                      className={`h-16 w-16 overflow-hidden rounded-full border-[3px] transition-all duration-200 ${
-                        isActive
-                          ? 'border-[#274c8f] shadow-md shadow-[#274c8f]/20'
-                          : 'border-gray-200 grayscale hover:grayscale-0 hover:border-[#274c8f]/40'
-                      }`}
-                    >
-                      <img
-                        src={imgSrc(t.image)}
-                        alt={t.full_name}
-                        className="h-full w-full object-cover object-top"
-                        onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }}
-                      />
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Name & position */}
-            <h3 className="mb-1 text-2xl font-extrabold uppercase tracking-wide text-gray-900">
-              {current.full_name}
-            </h3>
-            <p className="mb-5 text-sm italic text-gray-400">{current.position}</p>
-
-            {/* Detail rows */}
-            <ul className="mb-5 space-y-2.5">
-              {degree && (
-                <li className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#274c8f]/8 text-[#274c8f]">
-                    <GradIcon />
-                  </span>
-                  <span><b className="text-gray-800">{t('teachers_section.degree_label')}</b> {degree}</span>
-                </li>
-              )}
-              {current.experience && (
-                <li className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#274c8f]/8 text-[#274c8f]">
-                    <ClockIcon />
-                  </span>
-                  <span><b className="text-gray-800">{t('teachers_section.experience_label')}</b> {current.experience}</span>
-                </li>
-              )}
-              {current.sciences.length > 0 && (
-                <li className="flex items-start gap-3 text-sm text-gray-600">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#274c8f]/8 text-[#274c8f]">
-                    <BookIcon />
-                  </span>
-                  <span><b className="text-gray-800">{t('teachers_section.sciences_label')}</b> {current.sciences.map(s => s.name).join(', ')}</span>
-                </li>
-              )}
-            </ul>
-
-            {/* About */}
-            {aboutText && (
-              <p className="mb-6 line-clamp-3 text-sm leading-relaxed text-gray-500">
-                {aboutText}
-              </p>
-            )}
-
-            {/* Bottom row */}
-            <div className="mt-auto flex items-center justify-between">
-              {/* Social placeholder icons */}
-              <div className="flex items-center gap-2">
-                {[LinkIcon, ChatIcon, ShareIcon].map((Icon, i) => (
-                  <button
-                    key={i}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition hover:border-[#274c8f] hover:text-[#274c8f]"
-                  >
-                    <Icon />
-                  </button>
-                ))}
-              </div>
-
-              {/* CTA */}
-              <Link
-                to={`/teachers/${current.uuid}`}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#274c8f] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#1a3465] hover:shadow-md active:scale-95"
-              >
-                {t('teachers_section.profile_btn')}
-                <ArrowIcon />
-              </Link>
-            </div>
-
-          </div>
+          {/* Next */}
+          <button
+            onClick={goNext}
+            disabled={!canNext}
+            aria-label="Keyingi"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 text-gray-400 transition-all hover:border-[#274c8f] hover:text-[#274c8f] disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronRightIcon />
+          </button>
         </div>
+
+        {/* Page dots */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex justify-center gap-1.5">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  const newStart = i * VISIBLE
+                  setWindowStart(newStart)
+                  setActiveIdx(newStart)
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentPage ? 'w-6 bg-[#274c8f]' : 'w-1.5 bg-gray-300 hover:bg-gray-400'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Detail panel */}
+        <DetailPanel teacher={current} />
+
+        {/* All teachers link */}
+        <div className="mt-8 text-center">
+          <Link
+            to="/teachers"
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-[#274c8f]/20 bg-white px-6 py-2.5 text-sm font-semibold text-[#274c8f] transition-all hover:border-[#274c8f] hover:bg-[#274c8f] hover:text-white"
+          >
+            {t('teachers_section.all_btn')}
+            <ArrowIcon />
+          </Link>
+        </div>
+
       </div>
     </section>
   )
 }
 
 // --- Icons ---
-function GradIcon() {
+function ChevronLeftIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
     </svg>
   )
 }
-function ClockIcon() {
+function ChevronRightIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <circle cx="12" cy="12" r="10" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-    </svg>
-  )
-}
-function BookIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z" />
-    </svg>
-  )
-}
-function LinkIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-    </svg>
-  )
-}
-function ChatIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
-  )
-}
-function ShareIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   )
 }

@@ -90,7 +90,8 @@
     "degree_label": "Academic degree:",
     "experience_label": "Experience:",
     "sciences_label": "Subjects:",
-    "profile_btn": "View Profile"
+    "profile_btn": "View Profile",
+    "all_btn": "All Teachers"
   },
   "news_section": {
     "label": "Latest News",

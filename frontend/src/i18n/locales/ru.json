@@ -90,7 +90,8 @@
     "degree_label": "Учёная степень:",
     "experience_label": "Опыт:",
     "sciences_label": "Предметы:",
-    "profile_btn": "Просмотр профиля"
+    "profile_btn": "Просмотр профиля",
+    "all_btn": "Все учителя"
   },
   "news_section": {
     "label": "Последние новости",

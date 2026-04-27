@@ -2,7 +2,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status
 
-from core.utils import api_response, error_response
+from core.utils import api_response, error_response, paginated_response
+from core.pagination import CustomPageNumberPagination
 from .models import Teacher, About, Statistic, Contact
 from .serializers import (
     TeacherListSerializer, TeacherDetailSerializer,
@@ -74,16 +75,23 @@ class TeacherListView(APIView):
     """
     GET /api/v1/teachers/
     Query params:
-      - type : 'management' | 'teacher'  (filter by teacher type)
+      - type     : 'management' | 'teacher'
+      - page     : sahifa raqami (default: 1)
+      - pageSize : sahifadagi elementlar soni (default: 12)
     """
 
     def get(self, request):
         qs = Teacher.objects.filter(is_active=True).prefetch_related('sciences').order_by('order')
+
         teacher_type = request.query_params.get('type')
         if teacher_type:
             qs = qs.filter(type=teacher_type)
-        serializer = TeacherListSerializer(qs, many=True, context={'request': request})
-        return api_response(data=serializer.data)
+
+        paginator = CustomPageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(qs, request)
+        serializer = TeacherListSerializer(page, many=True, context={'request': request})
+        return paginated_response(paginator, serializer)
 
 
 class TeacherDetailView(APIView):

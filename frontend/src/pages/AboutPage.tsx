@@ -471,7 +471,8 @@ export default function AboutPage() {
   const { t } = useTranslation()
   const { data: about, isLoading: aboutLoading } = useAbout()
   const { data: stats = [], isLoading: statsLoading } = useStatistics()
-  const { data: management = [], isLoading: mgmtLoading } = useTeachers('management')
+  const { data: managementData, isLoading: mgmtLoading } = useTeachers({ type: 'management', pageSize: 100 })
+  const management = managementData?.data ?? []
   const VALUES = [1, 2, 3, 4].map((n, i) => ({
     icon: VALUE_ICONS[i],
     title: t(`about_page.value${n}_title`),

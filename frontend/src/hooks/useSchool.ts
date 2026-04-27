@@ -7,7 +7,8 @@ export const SCHOOL_KEYS = {
   home: ['home'] as const,
   about: ['about'] as const,
   statistics: ['statistics'] as const,
-  teachers: (type?: string) => ['teachers', type] as const,
+  teachers: (params?: { type?: string; page?: number; pageSize?: number }) =>
+    ['teachers', params] as const,
   teacher: (uuid: string) => ['teachers', uuid] as const,
 }
 
@@ -43,10 +44,14 @@ export function useStatistics() {
   })
 }
 
-export function useTeachers(type?: 'management' | 'teacher') {
+export function useTeachers(params: {
+  type?: 'management' | 'teacher'
+  page?: number
+  pageSize?: number
+} = {}) {
   return useQuery({
-    queryKey: SCHOOL_KEYS.teachers(type),
-    queryFn: () => schoolService.getTeachers(type),
+    queryKey: SCHOOL_KEYS.teachers(params),
+    queryFn: () => schoolService.getTeachers(params),
     staleTime: 5 * 60 * 1000,
   })
 }
