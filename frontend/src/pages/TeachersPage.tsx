@@ -215,9 +215,8 @@ export default function TeachersPage() {
   const hasMore = accTeachers.length < total
 
   useEffect(() => {
-    if (!teachersData?.data) return
-    // pagination.page orqali aniqlaymiz — page state stale closure muammosini oldini oladi
-    const isFirst = teachersData.pagination.page === 1
+    if (!teachersData?.data?.length) return
+    const isFirst = (teachersData.pagination?.page ?? 1) === 1
     setAccTeachers(prev => isFirst ? teachersData.data : [...prev, ...teachersData.data])
   }, [teachersData]) // eslint-disable-line react-hooks/exhaustive-deps
 
