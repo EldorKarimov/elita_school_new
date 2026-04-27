@@ -5,7 +5,7 @@ import { useTeachers } from '@/hooks/useSchool'
 import { mediaUrl } from '@/lib/utils'
 import type { Teacher } from '@/types'
 
-const STEP = 6
+const STEP = 10
 
 
 const DEGREE_LABELS: Record<string, string> = {
@@ -208,7 +208,7 @@ export default function TeachersPage() {
   const [accTeachers, setAccTeachers] = useState<Teacher[]>([])
 
   const { data: managementData, isLoading: mgLoading } = useTeachers({ type: 'management', pageSize: 100 })
-  const { data: teachersData, isLoading: tchLoading } = useTeachers({ type: 'teacher', page, pageSize: STEP })
+  const { data: teachersData, isLoading: tchLoading, isFetching: tchFetching } = useTeachers({ type: 'teacher', page, pageSize: STEP })
 
   const management = managementData?.data ?? []
   const total = teachersData?.pagination?.totalCount ?? 0
@@ -216,8 +216,10 @@ export default function TeachersPage() {
 
   useEffect(() => {
     if (!teachersData?.data) return
-    setAccTeachers(prev => page === 1 ? teachersData.data : [...prev, ...teachersData.data])
-  }, [teachersData, page])
+    // pagination.page orqali aniqlaymiz — page state stale closure muammosini oldini oladi
+    const isFirst = teachersData.pagination.page === 1
+    setAccTeachers(prev => isFirst ? teachersData.data : [...prev, ...teachersData.data])
+  }, [teachersData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-[#f8faff]">
@@ -236,7 +238,7 @@ export default function TeachersPage() {
           </p>
 
           {/* Stats */}
-          {!mgLoading && !tchLoading && (
+          {/* {!mgLoading && !tchLoading && (
             <div className="mt-8 inline-flex divide-x divide-white/20 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm">
               <div className="px-8 py-4">
                 <p className="text-2xl font-extrabold text-white">{managementData?.pagination?.totalCount ?? 0}</p>
@@ -251,7 +253,7 @@ export default function TeachersPage() {
                 <p className="text-xs text-white/60">{t('teachers_page.stat_total')}</p>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -315,6 +317,14 @@ export default function TeachersPage() {
             )}
           </div>
 
+          <style>{`
+            @keyframes tcEnter {
+              from { opacity: 0; transform: translateY(14px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            .tc-card { animation: tcEnter 0.4s ease forwards; }
+          `}</style>
+
           {tchLoading && accTeachers.length === 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {Array.from({ length: STEP }).map((_, i) => <SkeletonTeacher key={i} />)}
@@ -322,46 +332,65 @@ export default function TeachersPage() {
           ) : (
             <>
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                {accTeachers.map(t => <TeacherCard key={t.uuid} teacher={t} />)}
+                {accTeachers.map((teacher, i) => (
+                  <div
+                    key={teacher.uuid}
+                    className="tc-card"
+                    style={{ animationDelay: `${(i % STEP) * 40}ms` }}
+                  >
+                    <TeacherCard teacher={teacher} />
+                  </div>
+                ))}
               </div>
 
-              {/* Loading more spinner */}
-              {tchLoading && accTeachers.length > 0 && (
-                <div className="mt-8 flex justify-center">
+              {/* Ko'proq yuklanayotganda spinner */}
+              {tchFetching && accTeachers.length > 0 && (
+                <div className="mt-10 flex flex-col items-center gap-3">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#274c8f]/20 border-t-[#274c8f]" />
+                  <p className="text-xs text-gray-400">Yuklanmoqda...</p>
                 </div>
               )}
 
-              {/* Load more */}
-              {hasMore && !tchLoading && (
-                <div className="mt-10 flex flex-col items-center gap-3">
-                  {/* Progress bar */}
-                  <div className="w-48 overflow-hidden rounded-full bg-gray-200 h-1.5">
-                    <div
-                      className="h-full rounded-full bg-[#274c8f] transition-all duration-500"
-                      style={{ width: `${(accTeachers.length / total) * 100}%` }}
-                    />
+              {/* Ko'proq ko'rish tugmasi */}
+              {hasMore && !tchFetching && (
+                <div className="mt-10 flex flex-col items-center gap-4">
+                  {/* Progress */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-40 overflow-hidden rounded-full bg-gray-200 h-1.5">
+                      <div
+                        className="h-full rounded-full bg-[#274c8f] transition-all duration-700"
+                        style={{ width: `${(accTeachers.length / total) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-400 tabular-nums">
+                      {accTeachers.length} / {total}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-400">
-                    {accTeachers.length} / {total}
-                  </p>
+
                   <button
                     onClick={() => setPage(p => p + 1)}
-                    className="mt-2 flex items-center gap-2 rounded-xl border-2 border-[#274c8f]/20 bg-white px-8 py-3 text-sm font-semibold text-[#274c8f] transition-all hover:border-[#274c8f] hover:bg-[#274c8f] hover:text-white hover:shadow-lg hover:shadow-[#274c8f]/20"
+                    className="group relative overflow-hidden rounded-xl bg-[#274c8f] px-8 py-3.5 text-sm font-semibold text-white shadow-md shadow-[#274c8f]/25 transition-all hover:shadow-lg hover:shadow-[#274c8f]/35 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
                   >
-                    <MoreIcon />
-                    {t('teachers_page.load_more')} ({total - accTeachers.length} {t('teachers_page.remaining')})
+                    <span className="relative flex items-center gap-2.5">
+                      <MoreIcon />
+                      Yana ko'rish
+                      <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
+                        {total - accTeachers.length} ta
+                      </span>
+                    </span>
                   </button>
                 </div>
               )}
 
-              {/* All loaded */}
+              {/* Hammasi ko'rsatildi */}
               {!hasMore && total > STEP && (
                 <div className="mt-10 flex flex-col items-center gap-2">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600">
                     <CheckIcon />
                   </div>
-                  <p className="text-sm text-gray-400">{total} {t('teachers_page.all_shown')}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Barcha <span className="font-bold text-[#274c8f]">{total}</span> ta xodim ko'rsatildi
+                  </p>
                 </div>
               )}
             </>
