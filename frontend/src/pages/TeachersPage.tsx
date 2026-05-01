@@ -36,6 +36,7 @@ function DirectorGridCard({ teacher }: { teacher: Teacher }) {
         <img
           src={mediaUrl(teacher.image)}
           alt={teacher.full_name}
+          loading="lazy"
           className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         {/* Direktor badge — chap yuqori burchak */}
@@ -86,6 +87,7 @@ function ManagementCard({ teacher }: { teacher: Teacher }) {
         <img
           src={mediaUrl(teacher.image)}
           alt={teacher.full_name}
+          loading="lazy"
           className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         {teacher.degree !== 'none' && (
@@ -132,6 +134,7 @@ function TeacherCard({ teacher }: { teacher: Teacher }) {
         <img
           src={mediaUrl(teacher.image)}
           alt={teacher.full_name}
+          loading="lazy"
           className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         {/* Degree badge top-right */}
@@ -155,18 +158,18 @@ function TeacherCard({ teacher }: { teacher: Teacher }) {
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="font-bold text-gray-900 leading-snug group-hover:text-[#274c8f] transition-colors line-clamp-1">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <h3 className="text-sm font-bold text-gray-900 leading-snug group-hover:text-[#274c8f] transition-colors line-clamp-1 sm:text-base">
           {teacher.full_name}
         </h3>
         <p className="mt-0.5 text-xs italic text-gray-500 line-clamp-1">{teacher.position}</p>
 
         <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
             <ClockIcon />
-            {teacher.experience}
+            <span className="line-clamp-1">{teacher.experience}</span>
           </div>
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#274c8f] opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="hidden items-center gap-1 text-xs font-semibold text-[#274c8f] sm:flex opacity-0 transition-opacity group-hover:opacity-100">
             Ko'rish <ArrowIcon />
           </span>
         </div>
@@ -325,58 +328,58 @@ export default function TeachersPage() {
           `}</style>
 
           {tchLoading && accTeachers.length === 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
               {Array.from({ length: STEP }).map((_, i) => <SkeletonTeacher key={i} />)}
             </div>
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
                 {accTeachers.map((teacher, i) => (
                   <div
                     key={teacher.uuid}
                     className="tc-card"
-                    style={{ animationDelay: `${(i % STEP) * 40}ms` }}
+                    style={{ animationDelay: `${(i % STEP) * 35}ms` }}
                   >
                     <TeacherCard teacher={teacher} />
                   </div>
                 ))}
               </div>
 
-              {/* Ko'proq yuklanayotganda spinner */}
-              {tchFetching && accTeachers.length > 0 && (
-                <div className="mt-10 flex flex-col items-center gap-3">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#274c8f]/20 border-t-[#274c8f]" />
-                  <p className="text-xs text-gray-400">Yuklanmoqda...</p>
-                </div>
-              )}
-
-              {/* Ko'proq ko'rish tugmasi */}
-              {hasMore && !tchFetching && (
-                <div className="mt-10 flex flex-col items-center gap-4">
-                  {/* Progress */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-40 overflow-hidden rounded-full bg-gray-200 h-1.5">
+              {/* Ko'proq ko'rish tugmasi — fetching paytida ham ko'rsatiladi, ichida spinner */}
+              {hasMore && (
+                <div className="mt-10 flex flex-col items-center gap-4 px-4 sm:px-0">
+                  {/* Progress bar */}
+                  <div className="flex w-full max-w-xs items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200">
                       <div
                         className="h-full rounded-full bg-[#274c8f] transition-all duration-700"
                         style={{ width: `${(accTeachers.length / total) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs text-gray-400 tabular-nums">
+                    <span className="shrink-0 text-xs tabular-nums text-gray-400">
                       {accTeachers.length} / {total}
                     </span>
                   </div>
 
                   <button
-                    onClick={() => setPage(p => p + 1)}
-                    className="group relative overflow-hidden rounded-xl bg-[#274c8f] px-8 py-3.5 text-sm font-semibold text-white shadow-md shadow-[#274c8f]/25 transition-all hover:shadow-lg hover:shadow-[#274c8f]/35 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
+                    onClick={() => { if (!tchFetching) setPage(p => p + 1) }}
+                    disabled={tchFetching}
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#274c8f] px-8 py-3.5 text-sm font-semibold text-white shadow-md shadow-[#274c8f]/25 transition-all hover:shadow-lg hover:shadow-[#274c8f]/35 hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:translate-y-0 disabled:hover:shadow-md sm:w-auto"
                   >
-                    <span className="relative flex items-center gap-2.5">
-                      <MoreIcon />
-                      Yana ko'rish
-                      <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
-                        {total - accTeachers.length} ta
-                      </span>
-                    </span>
+                    {tchFetching ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Yuklanmoqda...
+                      </>
+                    ) : (
+                      <>
+                        <MoreIcon />
+                        Yana ko'rish
+                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
+                          {total - accTeachers.length} ta
+                        </span>
+                      </>
+                    )}
                   </button>
                 </div>
               )}

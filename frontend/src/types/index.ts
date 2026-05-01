@@ -37,10 +37,10 @@ export type TeacherDegree = 'bachelor' | 'master' | 'phd' | 'doctor' | 'none'
 
 export interface Teacher extends BaseEntity {
   full_name: string
-  image: string
+  image: string | null
   position: string
   experience: string
-  about: string
+  about: string | null
   type: TeacherType
   degree: TeacherDegree
   sciences: Science[]

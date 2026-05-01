@@ -21,6 +21,7 @@ const rightServices: Service[] = [
   { id: 6, titleKey: 'vocational_title', descKey: 'vocational_desc', icon: <CareerIcon /> },
 ]
 
+// --- Desktop: icon + text row with hover popup ---
 function ServiceItem({
   service,
   align,
@@ -43,18 +44,18 @@ function ServiceItem({
       {/* Text */}
       <div className={`flex-1 ${align === 'right' ? 'text-right' : 'text-left'}`}>
         <p className="text-base font-bold text-gray-800 leading-tight">{title}</p>
-        <p className="mt-1 text-sm text-gray-400 leading-relaxed line-clamp-2 hidden sm:block">
+        <p className="mt-1 text-sm text-gray-400 leading-relaxed line-clamp-2">
           {desc.split('.')[0]}.
         </p>
       </div>
 
-      {/* Icon button + popup wrapper */}
+      {/* Icon + popup */}
       <div
         className="relative shrink-0"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Glow ring on hover */}
+        {/* Glow ring */}
         <div
           className={`absolute inset-0 rounded-full bg-[#274c8f]/20 transition-all duration-300 ${
             hovered ? 'scale-150 opacity-100' : 'scale-100 opacity-0'
@@ -82,22 +83,17 @@ function ServiceItem({
               : 'opacity-0 translate-y-5 pointer-events-none'
           }`}
         >
-          {/* Arrow */}
           <div
             className={`absolute top-5 h-3 w-3 rotate-45 bg-white border-gray-100 ${
-              align === 'right'
-                ? '-right-1.5 border-r border-t'
-                : '-left-1.5 border-l border-b'
+              align === 'right' ? '-right-1.5 border-r border-t' : '-left-1.5 border-l border-b'
             }`}
           />
-          {/* Popup header */}
           <div className="mb-3 flex items-center gap-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#274c8f] text-white">
               {service.icon}
             </div>
             <h4 className="text-sm font-bold text-gray-900 leading-tight">{title}</h4>
           </div>
-          {/* Divider */}
           <div className="mb-3 h-px bg-gradient-to-r from-[#274c8f]/20 to-transparent" />
           <p className="text-xs leading-relaxed text-gray-500">{desc}</p>
         </div>
@@ -106,34 +102,111 @@ function ServiceItem({
   )
 }
 
+// --- Mobile: simple card ---
+function MobileServiceCard({ service }: { service: Service }) {
+  const { t } = useTranslation()
+  const title = t(`services_section.${service.titleKey}`)
+  const desc = t(`services_section.${service.descKey}`)
+  const firstSentence = desc.split('.')[0]
+
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#274c8f]/8 text-[#274c8f]">
+        {service.icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-gray-900 leading-snug">{title}</p>
+        {firstSentence && (
+          <p className="mt-0.5 text-xs leading-relaxed text-gray-500 line-clamp-2">
+            {firstSentence}.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// --- Center image (shared) ---
+function CenterImage({ size }: { size: 'sm' | 'lg' }) {
+  const isLg = size === 'lg'
+  return (
+    <div className="relative flex flex-col items-center justify-center">
+      {isLg && (
+        <>
+          <div className="absolute h-[420px] w-[420px] rounded-full border-2 border-dashed border-[#274c8f]/15 animate-[spin_30s_linear_infinite]" />
+          <div className="absolute h-[340px] w-[340px] rounded-full border border-[#274c8f]/10" />
+          <div className="absolute top-6 right-10 h-3.5 w-3.5 rounded-full bg-[#274c8f]/40 animate-bounce" style={{ animationDuration: '2s' }} />
+          <div className="absolute bottom-10 left-8 h-5 w-5 rounded-full bg-[#274c8f]/25 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+          <div className="absolute top-1/3 -left-3 h-2.5 w-2.5 rounded-full bg-[#274c8f]/50" />
+          <div className="absolute top-2/3 -right-3 h-2.5 w-2.5 rounded-full bg-[#274c8f]/50" />
+        </>
+      )}
+      <div
+        className={`relative z-10 overflow-hidden shadow-2xl ring-4 ring-[#274c8f]/10 ring-offset-4 ring-offset-[#f8faff] ${
+          isLg ? 'w-72 rounded-[2.5rem]' : 'w-44 rounded-[2rem] sm:w-52'
+        }`}
+      >
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#274c8f]/20 to-transparent z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#274c8f]/30 to-transparent z-10" />
+        <img
+          src={oquvchi}
+          alt="O'quvchi"
+          loading="lazy"
+          className="w-full object-cover object-top"
+          style={{ minHeight: isLg ? '460px' : '220px' }}
+        />
+        <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#274c8f] px-3 py-1 text-xs font-bold text-white shadow-lg">
+          Elita Akademik Maktabi
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ServicesSection() {
   const { t } = useTranslation()
+  const allServices = [...leftServices, ...rightServices]
+
   return (
-    <section className="relative overflow-hidden bg-[#f8faff] py-24">
+    <section className="relative overflow-hidden bg-[#f8faff] py-16 md:py-24">
       {/* Background decoration */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#274c8f]/5 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#274c8f]/5 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[#274c8f]/3 blur-3xl" />
       </div>
 
       <div className="relative container mx-auto px-4">
 
         {/* Header */}
-        <div className="mb-16 text-center">
+        <div className="mb-10 text-center md:mb-16">
           <span className="mb-3 inline-block rounded-full bg-[#274c8f]/8 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
             {t('services_section.label')}
           </span>
-          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl md:text-4xl">
             {t('services_section.subtitle_badge')}
           </h2>
-          <p className="mt-3 max-w-lg mx-auto text-base text-gray-500">
+          <p className="mt-3 mx-auto max-w-lg text-sm text-gray-500 sm:text-base">
             {t('services_section.subtitle')}
           </p>
         </div>
 
-        {/* Main layout */}
-        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_360px_1fr] items-center gap-8 lg:gap-14">
+        {/* ── MOBILE layout (< lg) ── */}
+        <div className="lg:hidden">
+          {/* Image */}
+          <div className="mb-8 flex justify-center">
+            <CenterImage size="sm" />
+          </div>
+
+          {/* 2-column service cards */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {allServices.map(service => (
+              <MobileServiceCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
+
+        {/* ── DESKTOP layout (≥ lg) ── */}
+        <div className="hidden lg:grid lg:mx-auto lg:max-w-6xl lg:grid-cols-[1fr_360px_1fr] lg:items-center lg:gap-14">
 
           {/* Left services */}
           <div className="flex flex-col gap-12">
@@ -143,36 +216,7 @@ export function ServicesSection() {
           </div>
 
           {/* Center image */}
-          <div className="relative flex flex-col items-center justify-center">
-            {/* Outer decorative ring */}
-            <div className="absolute h-[420px] w-[420px] rounded-full border-2 border-dashed border-[#274c8f]/15 animate-[spin_30s_linear_infinite]" />
-            {/* Inner ring */}
-            <div className="absolute h-[340px] w-[340px] rounded-full border border-[#274c8f]/10" />
-
-            {/* Floating dots */}
-            <div className="absolute top-6 right-10 h-3.5 w-3.5 rounded-full bg-[#274c8f]/40 animate-bounce" style={{ animationDuration: '2s' }} />
-            <div className="absolute bottom-10 left-8 h-5 w-5 rounded-full bg-[#274c8f]/25 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-            <div className="absolute top-1/3 -left-3 h-2.5 w-2.5 rounded-full bg-[#274c8f]/50" />
-            <div className="absolute top-2/3 -right-3 h-2.5 w-2.5 rounded-full bg-[#274c8f]/50" />
-
-            {/* Image container */}
-            <div className="relative z-10 w-72 overflow-hidden rounded-[2.5rem] shadow-2xl ring-4 ring-[#274c8f]/10 ring-offset-4 ring-offset-[#f8faff]">
-              {/* Top gradient overlay */}
-              <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#274c8f]/20 to-transparent z-10" />
-              {/* Bottom gradient overlay */}
-              <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#274c8f]/30 to-transparent z-10" />
-              <img
-                src={oquvchi}
-                alt="O'quvchi"
-                className="w-full object-cover object-top"
-                style={{ minHeight: '460px' }}
-              />
-              {/* School badge */}
-              <div className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#274c8f] px-4 py-1.5 text-xs font-bold text-white shadow-lg">
-                Elita Akademik Maktabi
-              </div>
-            </div>
-          </div>
+          <CenterImage size="lg" />
 
           {/* Right services */}
           <div className="flex flex-col gap-12">
@@ -181,6 +225,7 @@ export function ServicesSection() {
             ))}
           </div>
         </div>
+
       </div>
     </section>
   )
@@ -194,7 +239,6 @@ function FoodIcon() {
     </svg>
   )
 }
-
 function LanguageIcon() {
   return (
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -202,7 +246,6 @@ function LanguageIcon() {
     </svg>
   )
 }
-
 function BusIcon() {
   return (
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -210,7 +253,6 @@ function BusIcon() {
     </svg>
   )
 }
-
 function DayIcon() {
   return (
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -219,7 +261,6 @@ function DayIcon() {
     </svg>
   )
 }
-
 function IndividualIcon() {
   return (
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -227,7 +268,6 @@ function IndividualIcon() {
     </svg>
   )
 }
-
 function CareerIcon() {
   return (
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
