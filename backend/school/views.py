@@ -81,7 +81,13 @@ class TeacherListView(APIView):
     """
 
     def get(self, request):
-        qs = Teacher.objects.filter(is_active=True).prefetch_related('sciences').order_by('order')
+        qs = (
+            Teacher.objects
+            .filter(is_active=True)
+            .prefetch_related('sciences')
+            .only('uuid', 'full_name', 'image', 'position', 'experience', 'about', 'type', 'degree', 'order')
+            .order_by('order')
+        )
 
         teacher_type = request.query_params.get('type')
         if teacher_type:

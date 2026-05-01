@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSiteSettings } from '@/hooks/useSchool'
 import heroVideFallback from '@/assets/hero-video.mp4'
-import heroPng from '@/assets/hero.png'
 
 export function HeroSection() {
   const { t } = useTranslation()
@@ -61,15 +60,6 @@ export function HeroSection() {
             {t('hero.cta_secondary')}
           </Link>
         </div>
-      </div>
-
-      {/* Hero image — o'ng pastda */}
-      <div className="absolute bottom-0 right-8 hidden h-[75%] max-h-[480px] lg:block">
-        <img
-          src={heroPng}
-          alt="O'quvchi"
-          className="h-full w-auto object-contain object-bottom drop-shadow-2xl"
-        />
       </div>
 
       {/* Bottom fade */}
