@@ -100,25 +100,40 @@ class Schedule(BaseModel):
         verbose_name = _("Ish vaqti")
         verbose_name_plural = _("Ish vaqtlari")
 
+class Founder(BaseModel):
+    full_name = models.CharField(max_length=128, verbose_name=_("To'liq ism"))
+    photo = models.ImageField(upload_to='school/founder/', verbose_name=_("Rasm"))
+    about_founder = CKEditor5Field(verbose_name = _("Asoschi haqida"), config_name='extends')
+    work_status = models.CharField(
+        max_length=255, 
+        verbose_name=_("Asosiy faoliyati va lavozimi"),
+        help_text=_("Masalan: 'Elite' zavodi asoschisi va direktori")
+    )
+    
+    founder_message = CKEditor5Field(
+        verbose_name=_("Asoschi murojaati"),
+        help_text=_("Nima uchun aynan ushbu maktabga asos solingani haqida qisqa so'z"),
+        config_name = "extends"
+    )
+
+    class Meta:
+        verbose_name = _("Maktab asoschisi")
+        verbose_name_plural = _("Maktab asoschisi")
+
+    def __str__(self):
+        return self.full_name
+
+    
+
 # --- MAKTAB HAQIDA (ABOUT) ---
 class About(BaseModel):
     content = CKEditor5Field(verbose_name=_("Maktab haqida matn"), config_name='extends')
-    photo1 = models.ImageField(
-        upload_to='school/about/',
-        verbose_name=_("Rasm 1"),
-        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
-    )
-    photo2 = models.ImageField(
-        upload_to='school/about/',
-        blank=True, null=True,
-        verbose_name=_("Rasm 2"),
-        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
-    )
-    photo3 = models.ImageField(
-        upload_to='school/about/',
-        blank=True, null=True,
-        verbose_name=_("Rasm 3"),
-        help_text=_("Tavsiya etilgan o'lcham: 800×600 px. Nisbat: 4:3 (gorizontal). Fayl: JPG yoki PNG, max 2 MB.")
+    founder = models.OneToOneField(
+        Founder,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="founder",
+        verbose_name=_("Founder")
     )
 
     class Meta:

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from modeltranslation.admin import TranslationAdmin
-from .models import Science, Teacher, LessonExample, Schedule, About, Statistic, Contact
+from .models import Science, Teacher, LessonExample, Schedule, About, Statistic, Contact, Founder
 
 # --- REUSABLE MIXIN ---
 class BaseSchoolAdmin(TranslationAdmin):
@@ -71,12 +71,31 @@ class TeacherAdmin(BaseSchoolAdmin):
 
 
 
+@admin.register(Founder)
+class FounderAdmin(admin.ModelAdmin):
+    list_display = ('get_photo', 'full_name', 'work_status', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    readonly_fields = ('uuid', 'created_at', 'updated_at', 'get_photo')
+    search_fields = ('full_name',)
+    fieldsets = (
+        (_('Asosiy ma\'lumotlar'), {'fields': ('full_name', 'photo', 'get_photo', 'work_status')}),
+        (_('Batafsil'), {'fields': ('about_founder', 'founder_message')}),
+        (_('Holat'), {'fields': ('is_active', 'uuid', 'created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
+
+    def get_photo(self, obj):
+        if obj.photo:
+            return mark_safe(f'<img src="{obj.photo.url}" width="80" height="80" style="object-fit:cover; border-radius:8px;"/>')
+        return "-"
+    get_photo.short_description = _("Rasm")
+
+
 @admin.register(About)
 class AboutAdmin(BaseSchoolAdmin):
     list_display = ('uuid', 'is_active', 'updated_at')
     fieldsets = (
         (_('Matnli kontent'), {'fields': ('content_uz', 'content_ru', 'content_en')}),
-        (_('Media (Galereya)'), {'fields': ('photo1', 'photo2', 'photo3')}),
+        (_('Asoschi'), {'fields': ('founder',)}),
         (_('Holat'), {'fields': ('is_active', 'uuid')}),
     )
 

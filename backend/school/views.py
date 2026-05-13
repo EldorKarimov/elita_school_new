@@ -55,7 +55,7 @@ class AboutView(APIView):
     """GET /api/v1/about/"""
 
     def get(self, request):
-        about = About.objects.filter(is_active=True).first()
+        about = About.objects.select_related('founder').filter(is_active=True).first()
         if not about:
             return api_response(data=None)
         serializer = AboutSerializer(about, context={'request': request})

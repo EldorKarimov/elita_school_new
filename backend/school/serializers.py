@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Science, Teacher, LessonExample, Schedule, About, Statistic, Contact
+from .models import Science, Teacher, LessonExample, Schedule, About, Statistic, Contact, Founder
 
 
 class ScienceSerializer(serializers.ModelSerializer):
@@ -45,10 +45,18 @@ class TeacherDetailSerializer(serializers.ModelSerializer):
         )
 
 
+class FounderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Founder
+        fields = ('uuid', 'full_name', 'photo', 'about_founder', 'work_status', 'founder_message')
+
+
 class AboutSerializer(serializers.ModelSerializer):
+    founder = FounderSerializer(read_only=True)
+
     class Meta:
         model = About
-        fields = ('uuid', 'content', 'photo1', 'photo2', 'photo3')
+        fields = ('uuid', 'content', 'founder')
 
 
 class StatisticSerializer(serializers.ModelSerializer):

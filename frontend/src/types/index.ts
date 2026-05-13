@@ -67,11 +67,17 @@ export interface Schedule extends BaseEntity {
   end_time: string
 }
 
+export interface Founder extends BaseEntity {
+  full_name: string
+  photo: string
+  about_founder: string
+  work_status: string
+  founder_message: string
+}
+
 export interface About extends BaseEntity {
   content: string
-  photo1: string
-  photo2: string
-  photo3: string
+  founder: Founder | null
 }
 
 export interface Statistic extends BaseEntity {

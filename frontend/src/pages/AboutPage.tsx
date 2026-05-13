@@ -3,19 +3,19 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAbout, useStatistics, useTeachers } from '@/hooks/useSchool'
 import { mediaUrl } from '@/lib/utils'
+import type { Founder } from '@/types'
 
-// --- Animated counter ---
+// ─── Animated counter ────────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1800, start = false) {
   const [count, setCount] = useState(0)
   useEffect(() => {
     if (!start || target === 0) return
     let startTime: number | null = null
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp
-      const progress = Math.min((timestamp - startTime) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.floor(eased * target))
-      if (progress < 1) requestAnimationFrame(step)
+    const step = (ts: number) => {
+      if (!startTime) startTime = ts
+      const p = Math.min((ts - startTime) / duration, 1)
+      setCount(Math.floor((1 - Math.pow(1 - p, 3)) * target))
+      if (p < 1) requestAnimationFrame(step)
       else setCount(target)
     }
     requestAnimationFrame(step)
@@ -27,38 +27,34 @@ function StatCard({ label, value }: { label: string; value: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const count = useCountUp(value, 1800, visible)
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } }, { threshold: 0.3 })
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold: 0.3 },
+    )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
-
   return (
-    <div ref={ref} className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 px-6 py-8 text-center backdrop-blur-sm border border-white/10">
+    <div ref={ref} className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 border border-white/10 px-6 py-8 text-center backdrop-blur-sm">
       <span className="text-4xl font-extrabold text-white md:text-5xl">{count.toLocaleString()}+</span>
       <span className="text-sm font-medium text-white/70 leading-tight max-w-[120px]">{label}</span>
     </div>
   )
 }
 
-// --- Book page data type ---
-type BookPageData = {
-  label: string
-  title: string
-  body: string
-  accent: string
-}
+// ─── Book page data ───────────────────────────────────────────────────────────
+type BookPageData = { label: string; title: string; body: string; accent: string }
 
-// --- Single page face ---
 function BookPage({ data, align }: { data: BookPageData; align: 'left' | 'right' }) {
   return (
-    <div className={`flex flex-col justify-center h-full p-8 ${align === 'right' ? 'border-l-4' : 'border-r-4'}`}
-      style={{ borderColor: data.accent + '22' }}>
-      <span className="text-[10px] font-bold uppercase tracking-widest mb-4"
-        style={{ color: data.accent }}>
+    <div
+      className={`flex flex-col justify-center h-full p-8 ${align === 'right' ? 'border-l-4' : 'border-r-4'}`}
+      style={{ borderColor: data.accent + '22' }}
+    >
+      <span className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: data.accent }}>
         {data.label}
       </span>
       <h3 className="text-xl font-extrabold text-gray-900 mb-4 leading-snug">{data.title}</h3>
@@ -68,10 +64,9 @@ function BookPage({ data, align }: { data: BookPageData; align: 'left' | 'right'
   )
 }
 
-// --- Book hero ---
+// ─── Book Hero ────────────────────────────────────────────────────────────────
 function BookHero() {
   const { t } = useTranslation()
-  // 'closed' → 'opening' (muqova ochiladi) → 'open' (to'liq ochiq)
   const [phase, setPhase] = useState<'closed' | 'opening' | 'open'>('closed')
   const [bookTiltY, setBookTiltY] = useState(-28)
   const [bookTiltX, setBookTiltX] = useState(6)
@@ -81,12 +76,9 @@ function BookHero() {
   function handleOpen() {
     if (phase !== 'closed') return
     setPhase('opening')
-    // 1-qadam: kitob to'g'rilanadi (0–450ms)
     setBookTiltY(0)
     setBookTiltX(0)
-    // 2-qadam: muqova ochiladi (450–1350ms)
     setTimeout(() => setCoverAngle(-158), 450)
-    // 3-qadam: ochiq ko'rinishga o'tish (1400ms)
     setTimeout(() => setPhase('open'), 1400)
   }
 
@@ -130,26 +122,22 @@ function BookHero() {
       className="relative overflow-hidden py-16 md:py-20"
       style={{ background: 'linear-gradient(135deg, #0f2557 0%, #1a3a7c 50%, #0e4d6e 100%)' }}
     >
-      {/* Bg pattern */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
       <div className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-[#274c8f]/40 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#0e7490]/30 blur-3xl" />
 
       <div className="relative z-10 container mx-auto px-4">
-
         {/* Breadcrumb */}
         <div className="mb-10 flex items-center justify-center gap-2 text-xs text-white/40">
           <Link to="/" className="hover:text-white/70 transition-colors">{t('common.home')}</Link>
           <span>/</span>
-          <span className="text-white/70">{t('about_page.label')}</span>
+          <span className="text-white/70">{t('about_page.label', { defaultValue: 'Biz haqimizda' })}</span>
         </div>
 
         {/* ── DESKTOP: 3D Book ── */}
         <div className="hidden md:flex flex-col items-center">
-
           {phase !== 'open' ? (
-            /* Closed + Opening animatsiya */
             <div className="flex flex-col items-center">
               <div style={{ perspective: '1200px' }}>
                 <div
@@ -166,15 +154,14 @@ function BookHero() {
                       : 'drop-shadow(4px 8px 20px rgba(0,0,0,0.4))',
                   }}
                 >
-                  {/* Orqa muqova */}
+                  {/* Back cover */}
                   <div style={{
                     position: 'absolute', inset: 0,
                     background: '#0d1f45',
                     borderRadius: '2px 6px 6px 2px',
                     transform: 'translateZ(-2px)',
                   }} />
-
-                  {/* Muqova ostidagi sahifa (ochilayotganda ko'rinadi) */}
+                  {/* Inner page */}
                   <div style={{
                     position: 'absolute', inset: 0,
                     background: '#f8f9ff',
@@ -190,8 +177,7 @@ function BookHero() {
                       {LEAVES[0].front.title}
                     </p>
                   </div>
-
-                  {/* Ustun (spine) */}
+                  {/* Spine */}
                   <div style={{
                     position: 'absolute', top: 0, left: 0,
                     width: 28, height: '100%',
@@ -199,8 +185,7 @@ function BookHero() {
                     transformOrigin: 'right center',
                     transform: 'rotateY(-90deg)',
                   }} />
-
-                  {/* Sahifalar qirrasi */}
+                  {/* Pages edge */}
                   <div style={{
                     position: 'absolute', top: 6, right: 0,
                     width: 18, height: 'calc(100% - 12px)',
@@ -208,18 +193,14 @@ function BookHero() {
                     transformOrigin: 'left center',
                     transform: 'rotateY(90deg)',
                   }} />
-
-                  {/* MUQOVA — chapga aylanib ochiladi */}
+                  {/* Cover */}
                   <div style={{
                     position: 'absolute', inset: 0,
                     transformOrigin: 'left center',
                     transformStyle: 'preserve-3d',
                     transform: `rotateY(${coverAngle}deg)`,
-                    transition: coverAngle !== 0
-                      ? 'transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000)'
-                      : 'none',
+                    transition: coverAngle !== 0 ? 'transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000)' : 'none',
                   }}>
-                    {/* Muqova old tomoni */}
                     <div style={{
                       position: 'absolute', inset: 0,
                       background: 'linear-gradient(145deg, #1e3d7e 0%, #274c8f 60%, #3a5fa5 100%)',
@@ -241,8 +222,6 @@ function BookHero() {
                         {t('about_page.label')}
                       </p>
                     </div>
-
-                    {/* Muqova ichki tomoni (ochilganda ko'rinadi) */}
                     <div style={{
                       position: 'absolute', inset: 0,
                       background: 'linear-gradient(to right, #ede8d8, #f5f0e4)',
@@ -252,12 +231,9 @@ function BookHero() {
                     }} />
                   </div>
                 </div>
-
-                {/* Soya */}
                 <div className="mx-auto mt-3 h-3 w-36 rounded-full bg-black/40 blur-md" />
               </div>
 
-              {/* Hint */}
               <div className="mt-8 flex flex-col items-center gap-2 transition-opacity duration-300"
                 style={{ opacity: phase === 'closed' ? 1 : 0 }}>
                 <div className="animate-bounce text-white/40">
@@ -269,14 +245,11 @@ function BookHero() {
                 <p className="text-sm text-white/50">Maktab haqida bilish uchun kitobni bosing</p>
               </div>
             </div>
-
           ) : (
-            /* Opened book */
             <div className="flex flex-col items-center">
               <div style={{ perspective: '2000px' }}>
                 <div style={{ position: 'relative', width: 700, height: 430 }}>
-
-                  {/* Left cover / already-read pages */}
+                  {/* Left panel */}
                   <div style={{
                     position: 'absolute', top: 0, left: 0,
                     width: 350, height: 430,
@@ -297,12 +270,10 @@ function BookHero() {
                     ) : (
                       <BookPage data={LEAVES[flipped - 1].back} align="left" />
                     )}
-                    <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">
-                      {flipped * 2}
-                    </div>
+                    <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">{flipped * 2}</div>
                   </div>
 
-                  {/* Right base page */}
+                  {/* Right panel */}
                   <div style={{
                     position: 'absolute', top: 0, right: 0,
                     width: 350, height: 430,
@@ -318,21 +289,19 @@ function BookHero() {
                       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                         <span className="text-5xl mb-4">✅</span>
                         <p className="font-bold text-[#274c8f] text-base">Hammasi o'qildi!</p>
-                        <p className="text-gray-400 text-sm mt-2 max-w-[220px]">Quyida to'liq ma'lumot va rasmlar mavjud</p>
+                        <p className="text-gray-400 text-sm mt-2 max-w-[220px]">Quyida to'liq ma'lumot mavjud</p>
                         <button
-                          onClick={() => document.getElementById('about-content')?.scrollIntoView({ behavior: 'smooth' })}
+                          onClick={() => document.getElementById('founder-section')?.scrollIntoView({ behavior: 'smooth' })}
                           className="mt-5 rounded-xl bg-[#274c8f] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#1a3465] transition-colors"
                         >
                           Davom etish ↓
                         </button>
                       </div>
                     )}
-                    <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">
-                      {flipped * 2 + 1}
-                    </div>
+                    <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">{flipped * 2 + 1}</div>
                   </div>
 
-                  {/* Page leaves (flip animation) */}
+                  {/* Leaves */}
                   {LEAVES.map((leaf, i) => (
                     <div
                       key={i}
@@ -348,7 +317,6 @@ function BookHero() {
                       }}
                       onClick={() => i === flipped && canNext && setFlipped(f => f + 1)}
                     >
-                      {/* Front face */}
                       <div style={{
                         position: 'absolute', inset: 0,
                         background: '#f7f9ff',
@@ -366,12 +334,8 @@ function BookHero() {
                             </svg>
                           </div>
                         )}
-                        <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">
-                          {i * 2 + 1}
-                        </div>
+                        <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">{i * 2 + 1}</div>
                       </div>
-
-                      {/* Back face */}
                       <div style={{
                         position: 'absolute', inset: 0,
                         background: '#f0f4ff',
@@ -381,9 +345,7 @@ function BookHero() {
                         overflow: 'hidden',
                       }}>
                         <BookPage data={leaf.back} align="left" />
-                        <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">
-                          {i * 2 + 2}
-                        </div>
+                        <div className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-gray-200">{i * 2 + 2}</div>
                       </div>
                     </div>
                   ))}
@@ -410,20 +372,12 @@ function BookHero() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-
                 <div className="flex items-center gap-2">
                   {LEAVES.map((_, i) => (
-                    <div key={i}
-                      className="rounded-full transition-all duration-300"
-                      style={{
-                        width: i < flipped ? 16 : 6,
-                        height: 6,
-                        background: i < flipped ? '#fff' : 'rgba(255,255,255,0.25)',
-                      }}
-                    />
+                    <div key={i} className="rounded-full transition-all duration-300"
+                      style={{ width: i < flipped ? 16 : 6, height: 6, background: i < flipped ? '#fff' : 'rgba(255,255,255,0.25)' }} />
                   ))}
                 </div>
-
                 <button
                   onClick={() => canNext && setFlipped(f => f + 1)}
                   disabled={!canNext}
@@ -451,7 +405,130 @@ function BookHero() {
   )
 }
 
-// --- Values icons ---
+// ─── Founder Section ──────────────────────────────────────────────────────────
+function FounderSection({ founder, loading }: { founder?: Founder | null; loading: boolean }) {
+  const { t } = useTranslation()
+
+  if (!loading && !founder) return null
+
+  return (
+    <section id="founder-section" className="relative overflow-hidden bg-[#f8faff] py-16 md:py-24">
+      {/* Subtle background decoration */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#274c8f]/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-[#274c8f]/5 blur-3xl" />
+      </div>
+
+      <div className="relative container mx-auto px-4">
+        {/* Section label */}
+        <div className="mb-12 text-center">
+          <span className="mb-3 inline-block rounded-full bg-[#274c8f]/10 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
+            {t('about_page.founder_label', { defaultValue: 'Maktab asoschisi' })}
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="mx-auto max-w-5xl grid gap-8 lg:grid-cols-[320px_1fr] lg:items-start">
+            <div className="animate-pulse rounded-3xl bg-gray-200 h-[420px]" />
+            <div className="space-y-4 pt-2">
+              <div className="h-5 w-1/3 animate-pulse rounded bg-gray-200" />
+              <div className="h-8 w-2/3 animate-pulse rounded bg-gray-200" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+              <div className="mt-6 space-y-2">
+                {[1,2,3,4,5].map(i => <div key={i} className="h-4 animate-pulse rounded bg-gray-200" />)}
+              </div>
+            </div>
+          </div>
+        ) : founder ? (
+          <div className="mx-auto max-w-5xl">
+            <div className="grid gap-10 lg:grid-cols-[320px_1fr] lg:items-start">
+
+              {/* Photo column */}
+              <div className="flex flex-col items-center lg:items-start gap-4">
+                <div className="relative w-full max-w-[280px] lg:max-w-none">
+                  {/* Decorative frame */}
+                  <div className="absolute -inset-3 rounded-3xl border-2 border-dashed border-[#274c8f]/15" />
+                  <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+                    <img
+                      src={mediaUrl(founder.photo)}
+                      alt={founder.full_name}
+                      loading="lazy"
+                      className="w-full object-cover object-top"
+                      style={{ aspectRatio: '3/4' }}
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f2557]/80 via-transparent to-transparent" />
+                    {/* Badge bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <p className="text-base font-extrabold text-white leading-tight">{founder.full_name}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* work_status — label yo'q, faqat matn */}
+                {founder.work_status && (
+                  <div className="w-full max-w-[280px] lg:max-w-none rounded-2xl border border-[#274c8f]/10 bg-white px-5 py-4 shadow-sm">
+                    <p className="text-sm font-semibold text-gray-700 leading-snug">{founder.work_status}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Content column */}
+              <div className="space-y-8">
+                {/* Name + title */}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#274c8f] mb-2">
+                    {t('about_page.founder_label', { defaultValue: 'Maktab asoschisi' })}
+                  </p>
+                  <h3 className="text-2xl font-extrabold text-gray-900 md:text-3xl leading-tight">
+                    {founder.full_name}
+                  </h3>
+                </div>
+
+                {/* About founder */}
+                {founder.about_founder && (
+                  <div>
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="h-px flex-1 bg-gradient-to-r from-[#274c8f]/20 to-transparent" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Asoschi haqida</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-[#274c8f]/20 to-transparent" />
+                    </div>
+                    <div
+                      className="ck-content prose prose-sm max-w-none text-gray-600 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: founder.about_founder }}
+                    />
+                  </div>
+                )}
+
+                {/* Founder message */}
+                {founder.founder_message && (
+                  <div className="relative rounded-2xl bg-gradient-to-br from-[#274c8f]/5 to-[#274c8f]/10 p-6">
+                    {/* Quote icon */}
+                    <svg
+                      className="absolute right-5 top-4 h-10 w-10 text-[#274c8f]/10"
+                      fill="currentColor" viewBox="0 0 32 32"
+                    >
+                      <path d="M10 8C6.686 8 4 10.686 4 14v10h10V14H7.6C7.6 11.573 9.573 9.6 12 9.6L10 8zm14 0c-3.314 0-6 2.686-6 6v10h10V14h-6.4C21.6 11.573 23.573 9.6 26 9.6L24 8z" />
+                    </svg>
+                    <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#274c8f]">
+                      Asoschi murojaati
+                    </p>
+                    <div
+                      className="ck-content prose prose-sm max-w-none text-sm italic leading-relaxed text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: founder.founder_message }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+// ─── Values icons ─────────────────────────────────────────────────────────────
 const VALUE_ICONS = [
   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.966 8.966 0 00-6 2.292m0-14.25v14.25" />
@@ -467,12 +544,14 @@ const VALUE_ICONS = [
   </svg>,
 ]
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AboutPage() {
   const { t } = useTranslation()
   const { data: about, isLoading: aboutLoading } = useAbout()
   const { data: stats = [], isLoading: statsLoading } = useStatistics()
   const { data: managementData, isLoading: mgmtLoading } = useTeachers({ type: 'management', pageSize: 100 })
   const management = managementData?.data ?? []
+
   const VALUES = [1, 2, 3, 4].map((n, i) => ({
     icon: VALUE_ICONS[i],
     title: t(`about_page.value${n}_title`),
@@ -482,7 +561,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#f8faff]">
 
-      {/* Book hero */}
+      {/* 1. KITOB HERO */}
       <BookHero />
 
       {/* Wave */}
@@ -492,66 +571,48 @@ export default function AboutPage() {
         </svg>
       </div>
 
-      {/* About content + photos */}
-      <section id="about-content" className="container mx-auto px-4 py-16">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-          <div>
-            <span className="mb-3 inline-block rounded-full bg-[#274c8f]/10 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
-              {t('about_page.history_label')}
-            </span>
-            <h2 className="mb-5 text-2xl font-extrabold text-gray-900 md:text-3xl leading-snug">
-              {t('about_page.history_title')}
-            </h2>
-            {aboutLoading ? (
-              <div className="space-y-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className={`h-4 animate-pulse rounded bg-gray-200 ${i === 4 ? 'w-2/3' : 'w-full'}`} />
-                ))}
-              </div>
-            ) : about?.content ? (
-              <div className="ck-content" dangerouslySetInnerHTML={{ __html: about.content }} />
-            ) : (
-              <p className="text-gray-500 text-sm">{t('about_page.no_content')}</p>
-            )}
-          </div>
+      {/* 2. ASOSCHI */}
+      <FounderSection founder={about?.founder} loading={aboutLoading} />
 
+      {/* 3. MAKTAB HAQIDA MATN */}
+      <section id="about-content" className="bg-white py-16 md:py-20">
+        <div className="container mx-auto px-4 max-w-3xl text-center">
+          <span className="mb-3 inline-block rounded-full bg-[#274c8f]/10 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
+            {t('about_page.about_label', { defaultValue: 'Biz haqimizda' })}
+          </span>
+          <h2 className="mb-6 text-2xl font-extrabold text-gray-900 md:text-3xl leading-snug">
+            {t('about_page.about_title', { defaultValue: 'Maktab haqida' })}
+          </h2>
           {aboutLoading ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 h-52 animate-pulse rounded-2xl bg-gray-200" />
-              <div className="h-36 animate-pulse rounded-2xl bg-gray-200" />
-              <div className="h-36 animate-pulse rounded-2xl bg-gray-200" />
+            <div className="space-y-3 text-left">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className={`h-4 animate-pulse rounded bg-gray-200 ${i === 4 ? 'w-2/3 mx-auto' : 'w-full'}`} />
+              ))}
             </div>
-          ) : about ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 overflow-hidden rounded-2xl shadow-md">
-                <img src={mediaUrl(about.photo1)} alt="Maktab haqida" className="h-56 w-full object-cover" />
-              </div>
-              {about.photo2 && (
-                <div className="overflow-hidden rounded-2xl shadow-sm">
-                  <img src={mediaUrl(about.photo2)} alt="Maktab haqida 2" className="h-36 w-full object-cover" />
-                </div>
-              )}
-              {about.photo3 && (
-                <div className="overflow-hidden rounded-2xl shadow-sm">
-                  <img src={mediaUrl(about.photo3)} alt="Maktab haqida 3" className="h-36 w-full object-cover" />
-                </div>
-              )}
-            </div>
-          ) : null}
+          ) : about?.content ? (
+            <div className="ck-content prose prose-sm sm:prose max-w-none text-left text-gray-600"
+              dangerouslySetInnerHTML={{ __html: about.content }} />
+          ) : (
+            <p className="text-sm text-gray-400">{t('about_page.no_content', { defaultValue: "Ma'lumot yo'q" })}</p>
+          )}
         </div>
       </section>
 
-      {/* Statistics */}
+      {/* 4. STATISTIKA */}
       {(statsLoading || stats.length > 0) && (
         <section className="bg-[#274c8f] py-16">
           <div className="container mx-auto px-4">
             <div className="mb-10 text-center">
-              <h2 className="text-2xl font-extrabold text-white md:text-3xl">{t('about_page.stats_title')}</h2>
-              <p className="mt-2 text-sm text-white/50">{t('about_page.stats_subtitle')}</p>
+              <h2 className="text-2xl font-extrabold text-white md:text-3xl">
+                {t('about_page.stats_title', { defaultValue: 'Raqamlarda maktabimiz' })}
+              </h2>
+              <p className="mt-2 text-sm text-white/50">
+                {t('about_page.stats_subtitle', { defaultValue: "Har bir raqam ortida o'quvchilarimiz taqdiri bor" })}
+              </p>
             </div>
             {statsLoading ? (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                {[1,2,3,4].map(i => <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/10" />)}
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/10" />)}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -562,19 +623,23 @@ export default function AboutPage() {
         </section>
       )}
 
-      {/* Values */}
-      <section className="container mx-auto px-4 py-16">
+      {/* 5. QADRIYATLAR */}
+      <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="mb-10 text-center">
           <span className="mb-3 inline-block rounded-full bg-[#274c8f]/10 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
-            {t('about_page.values_label')}
+            {t('about_page.values_label', { defaultValue: 'Qadriyatlar' })}
           </span>
-          <h2 className="text-2xl font-extrabold text-gray-900 md:text-3xl">{t('about_page.values_title')}</h2>
-          <p className="mt-2 text-sm text-gray-500">{t('about_page.values_subtitle')}</p>
+          <h2 className="text-2xl font-extrabold text-gray-900 md:text-3xl">
+            {t('about_page.values_title', { defaultValue: 'Bizning tamoyillarimiz' })}
+          </h2>
+          <p className="mt-2 text-sm text-gray-500">
+            {t('about_page.values_subtitle', { defaultValue: "Sifat, innovatsiya, mas'uliyat va hamkorlik" })}
+          </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {VALUES.map((v, i) => (
-            <div key={i} className="group flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#274c8f]/8 text-[#274c8f] group-hover:bg-[#274c8f] group-hover:text-white transition-all">
+            <div key={i} className="group flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#274c8f]/8 text-[#274c8f] transition-all group-hover:bg-[#274c8f] group-hover:text-white">
                 {v.icon}
               </div>
               <div>
@@ -586,24 +651,28 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Management */}
+      {/* 6. RAHBARIYAT */}
       {(mgmtLoading || management.length > 0) && (
         <section className="bg-white py-16">
           <div className="container mx-auto px-4">
             <div className="mb-10 text-center">
               <span className="mb-3 inline-block rounded-full bg-[#274c8f]/10 px-4 py-1.5 text-sm font-semibold text-[#274c8f]">
-                {t('about_page.management_label')}
+                {t('about_page.management_label', { defaultValue: 'Rahbariyat' })}
               </span>
-              <h2 className="text-2xl font-extrabold text-gray-900 md:text-3xl">{t('about_page.management_title')}</h2>
-              <p className="mt-2 text-sm text-gray-500">{t('about_page.management_subtitle')}</p>
+              <h2 className="text-2xl font-extrabold text-gray-900 md:text-3xl">
+                {t('about_page.management_title', { defaultValue: 'Tajribali jamoamiz' })}
+              </h2>
+              <p className="mt-2 text-sm text-gray-500">
+                {t('about_page.management_subtitle', { defaultValue: "Har bir rahbarimiz o'z sohasida yillik tajribaga ega mutaxassis" })}
+              </p>
             </div>
 
             {mgmtLoading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {[1,2,3,4].map(i => (
+                {[1, 2, 3, 4].map(i => (
                   <div key={i} className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
                     <div className="animate-pulse bg-gray-200" style={{ paddingBottom: '100%' }} />
-                    <div className="p-4 space-y-2">
+                    <div className="space-y-2 p-4">
                       <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
                       <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
                     </div>
@@ -614,14 +683,14 @@ export default function AboutPage() {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {management.map(person => (
                   <Link key={person.uuid} to={`/teachers/${person.uuid}`}
-                    className="group overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
+                    className="group overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
                     <div className="relative overflow-hidden" style={{ paddingBottom: '100%' }}>
-                      <img src={mediaUrl(person.image)} alt={person.full_name}
+                      <img src={mediaUrl(person.image)} alt={person.full_name} loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#274c8f]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#274c8f]/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
                     <div className="p-4">
-                      <p className="font-bold text-gray-900 text-sm leading-snug group-hover:text-[#274c8f] transition-colors">{person.full_name}</p>
+                      <p className="text-sm font-bold leading-snug text-gray-900 transition-colors group-hover:text-[#274c8f]">{person.full_name}</p>
                       {person.position && <p className="mt-0.5 text-xs text-gray-500">{person.position}</p>}
                       {person.experience && (
                         <span className="mt-2 inline-block rounded-full bg-[#274c8f]/8 px-2.5 py-0.5 text-[10px] font-semibold text-[#274c8f]">
@@ -637,7 +706,7 @@ export default function AboutPage() {
             <div className="mt-8 text-center">
               <Link to="/teachers"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#274c8f] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#1e3a6e]">
-                {t('about_page.all_teachers_btn')}
+                {t('about_page.all_teachers_btn', { defaultValue: "Barcha o'qituvchilar" })}
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -647,24 +716,27 @@ export default function AboutPage() {
         </section>
       )}
 
-      {/* CTA */}
+      {/* 7. CTA */}
       <section className="relative overflow-hidden bg-[#274c8f] py-16">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/5 blur-3xl" />
           <div className="absolute -left-20 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-white/5 blur-3xl" />
         </div>
         <div className="container relative mx-auto px-4 text-center">
-          <h2 className="text-2xl font-extrabold text-white md:text-3xl">{t('about_page.cta_title')}</h2>
-          <p className="mt-3 text-sm text-white/60 max-w-md mx-auto">{t('about_page.cta_subtitle')}</p>
-
+          <h2 className="text-2xl font-extrabold text-white md:text-3xl">
+            {t('about_page.cta_title', { defaultValue: "Bizga qo'shiling" })}
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-white/60">
+            {t('about_page.cta_subtitle', { defaultValue: "Farzandingizning kelajagi bizning eng muhim vazifamiz" })}
+          </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link to="/contact"
-              className="rounded-xl bg-white px-7 py-3 text-sm font-bold text-[#274c8f] shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-              {t('about_page.cta_contact')}
+              className="rounded-xl bg-white px-7 py-3 text-sm font-bold text-[#274c8f] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+              {t('about_page.cta_contact', { defaultValue: "Bog'lanish" })}
             </Link>
             <Link to="/teachers"
               className="rounded-xl border border-white/30 px-7 py-3 text-sm font-bold text-white transition-all hover:bg-white/10">
-              {t('about_page.cta_teachers')}
+              {t('about_page.cta_teachers', { defaultValue: "O'qituvchilar" })}
             </Link>
           </div>
         </div>
